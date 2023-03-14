@@ -1,95 +1,124 @@
-var config = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    physics: {
-        default: 'arcade',
-        arcade: {
-            gravity: { y: 0 },
-            debug: false
-        }
-    },
-    scene: {
-        preload: preload,
-        create: create,
-        update: update
-    }
+// Define constants
+const PADDLE_WIDTH = 10;
+const PADDLE_HEIGHT = 100;
+const BALL_RADIUS = 10;
+
+// Create canvas element
+const canvas = document.createElement('canvas');
+canvas.width = 640;
+canvas.height = 480;
+document.body.appendChild(canvas);
+
+// Get canvas context
+const context = canvas.getContext('2d');
+
+// Create paddles
+const leftPaddle = {
+  x: 0,
+  y: (canvas.height - PADDLE_HEIGHT) / 2,
+  width: PADDLE_WIDTH,
+  height: PADDLE_HEIGHT,
+  speed: 5
 };
 
-var game = new Phaser.Game(config);
-var ball;
-var player1;
-var player2;
-var cursors;
-var score1 = 0;
-var score2 = 0;
-var scoreText1;
-var scoreText2;
+const rightPaddle = {
+  x: canvas.width - PADDLE_WIDTH,
+  y: (canvas.height - PADDLE_HEIGHT) / 2,
+  width: PADDLE_WIDTH,
+  height: PADDLE_HEIGHT,
+  speed: 5
+};
 
-function preload ()
-{
-    this.load.image('ball', 'assets/ball.png');
-    this.load.image('paddle', 'assets/paddle.png');
+// Create ball
+const ball = {
+  x: canvas.width / 2,
+  y: canvas.height / 2,
+  radius: BALL_RADIUS,
+  velocityX: 5,
+  velocityY: 5
+};
+
+// Draw ball
+function drawBall() {
+  context.beginPath();
+  context.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+  context.fillStyle = 'white';
+  context.fill();
+  context.closePath();
 }
 
-function create ()
-{
-    ball = this.physics.add.image(400, 300, 'ball');
-    ball.setCollideWorldBounds(true);
-    ball.setBounce(1, 1);
-
-    player1 = this.physics.add.image(50, 300, 'paddle');
-    player1.setCollideWorldBounds(true);
-    player1.setImmovable(true);
-
-    player2 = this.physics.add.image(750, 300, 'paddle');
-    player2.setCollideWorldBounds(true);
-    player2.setImmovable(true);
-
-    cursors = this.input.keyboard.createCursorKeys();
-
-    scoreText1 = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });
-    scoreText2 = this.add.text(600, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });
-
-    this.physics.add.collider(ball, player1, function(){
-        ball.setVelocityX(350);
-        ball.setVelocityY(-Phaser.Math.Between(60, 120));
-    });
-    this.physics.add.collider(ball, player2, function(){
-        ball.setVelocityX(-350);
-        ball.setVelocityY(-Phaser.Math.Between(60, 120));
-    });
+// Draw paddles
+function drawPaddles() {
+  context.fillStyle = 'white';
+  context.fillRect(leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height);
+  context.fillRect(rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height);
 }
 
-function update ()
-{
-    if (cursors.up.isDown)
-    {
-        player1.setVelocityY(-300);
-    }
-    else if (cursors.down.isDown)
-    {
-        player1.setVelocityY(300);
-    }
-    else
-    {
-        player1.setVelocityY(0);
-    }
-
-    player2.setVelocityY(ball.body.velocity.y);
-
-    if (ball.body.x < 0)
-    {
-        score2 += 1;
-        scoreText2.setText('Score: ' + score2);
-        ball.setPosition(400, 300);
-        ball.setVelocity(0, 0);
-    }
-    else if (ball.body.x > 800)
-    {
-        score1 += 1;
-        scoreText1.setText('Score: ' + score1);
-        ball.setPosition(400, 300);
-        ball.setVelocity(0, 0);
-    }
+// Move left paddle
+function moveLeftPaddle() {
+  if (leftPaddle.y > 0) {
+    leftPaddle.y -= leftPaddle.speed;
+  }
 }
+
+// Move right paddle
+function moveRightPaddle() {
+  if (rightPaddle.y > 0) {
+    rightPaddle.y -= rightPaddle.speed;
+  }
+}
+
+// Update ball position
+function updateBall() {
+  // Update X position
+  ball.x += ball.velocityX;
+
+  // Check for collision with left paddle
+  if (ball.x - ball.radius < leftPaddle.x + leftPaddle.width &&
+      ball.y > leftPaddle.y &&
+      ball.y < leftPaddle.y + leftPaddle.height) {
+    ball.velocityX = -ball.velocityX;
+  }
+
+  // Check for collision with right paddle
+  if (ball.x + ball.radius > rightPaddle.x &&
+      ball.y > rightPaddle.y &&
+      ball.y < rightPaddle.y + rightPaddle.height) {
+    ball.velocityX = -ball.velocityX;
+  }
+
+  // Update Y position
+  ball.y += ball.velocityY;
+
+  // Check for collision with top or bottom of screen
+  if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
+    ball.velocityY = -ball.velocityY;
+  }
+}
+
+// Draw the game
+function draw() {
+  // Clear canvas
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw ball and paddles
+  drawBall();
+  drawPaddles();
+}
+
+// Update the game
+function update() {
+  // Move paddles
+  moveLeftPaddle();
+  moveRightPaddle();
+
+  // Update ball
+  updateBall();
+}
+
+// Start the game loop
+setInterval(function() {
+  update();
+  draw();
+}, 16);
+``
