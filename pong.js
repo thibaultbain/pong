@@ -1,133 +1,106 @@
-// Define constants
-const PADDLE_WIDTH = 10;
-const PADDLE_HEIGHT = 100;
-const BALL_RADIUS = 10;
+const canvasWidth = 600;
+const canvasHeight = 400;
+const paddleWidth = 10;
+const paddleHeight = 100;
+const ballRadius = 5;
+const ballSpeed = 5;
 
-// Create canvas element
-const canvas = document.createElement('canvas');
-canvas.width = 640;
-canvas.height = 480;
-document.body.appendChild(canvas);
+let canvas;
+let ctx;
+let ballX;
+let ballY;
+let ballDX;
+let ballDY;
+let leftPaddleY;
+let rightPaddleY;
 
-// Get canvas context
-const context = canvas.getContext('2d');
-
-// Create paddles
-const leftPaddle = {
-  x: 0,
-  y: (canvas.height - PADDLE_HEIGHT) / 2,
-  width: PADDLE_WIDTH,
-  height: PADDLE_HEIGHT,
-  speed: 5
-};
-
-const rightPaddle = {
-  x: canvas.width - PADDLE_WIDTH,
-  y: (canvas.height - PADDLE_HEIGHT) / 2,
-  width: PADDLE_WIDTH,
-  height: PADDLE_HEIGHT,
-  speed: 5
-};
-
-// Create ball
-const ball = {
-  x: canvas.width / 2,
-  y: canvas.height / 2,
-  radius: BALL_RADIUS,
-  velocityX: 5,
-  velocityY: 5
-};
-
-// Draw canvas
 function createCanvas() {
+  const gameDiv = document.querySelector('.game');
   canvas = document.createElement('canvas');
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
-  document.querySelector('.game').appendChild(canvas);
+  gameDiv.appendChild(canvas);
   ctx = canvas.getContext('2d');
 }
 
-// Draw ball
 function drawBall() {
-  context.beginPath();
-  context.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-  context.fillStyle = 'white';
-  context.fill();
-  context.closePath();
+  ctx.beginPath();
+  ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+  ctx.fillStyle = 'white';
+  ctx.fill();
 }
 
-// Draw paddles
 function drawPaddles() {
-  context.fillStyle = 'white';
-  context.fillRect(leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height);
-  context.fillRect(rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height);
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, leftPaddleY, paddleWidth, paddleHeight);
+  ctx.fillRect(canvasWidth - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
 }
 
-// Move left paddle
-function moveLeftPaddle() {
-  if (leftPaddle.y > 0) {
-    leftPaddle.y -= leftPaddle.speed;
-  }
-}
-
-// Move right paddle
-function moveRightPaddle() {
-  if (rightPaddle.y > 0) {
-    rightPaddle.y -= rightPaddle.speed;
-  }
-}
-
-// Update ball position
 function updateBall() {
-  // Update X position
-  ball.x += ball.velocityX;
-
-  // Check for collision with left paddle
-  if (ball.x - ball.radius < leftPaddle.x + leftPaddle.width &&
-      ball.y > leftPaddle.y &&
-      ball.y < leftPaddle.y + leftPaddle.height) {
-    ball.velocityX = -ball.velocityX;
+  ballX += ballDX;
+  ballY += ballDY;
+  
+  if (ballY + ballRadius > canvasHeight || ballY - ballRadius < 0) {
+    ballDY *= -1;
   }
-
-  // Check for collision with right paddle
-  if (ball.x + ball.radius > rightPaddle.x &&
-      ball.y > rightPaddle.y &&
-      ball.y < rightPaddle.y + rightPaddle.height) {
-    ball.velocityX = -ball.velocityX;
+  
+  if (ballX + ballRadius > canvasWidth - paddleWidth) {
+    if (ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
+      ballDX *= -1;
+    } else {
+      resetBall();
+    }
   }
-
-  // Update Y position
-  ball.y += ball.velocityY;
-
-  // Check for collision with top or bottom of screen
-  if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
-    ball.velocityY = -ball.velocityY;
+  
+  if (ballX - ballRadius < paddleWidth) {
+    if (ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
+      ballDX *= -1;
+    } else {
+      resetBall();
+    }
   }
 }
 
-// Draw the game
-function draw() {
-  // Clear canvas
-  context.clearRect(0, 0, canvas.width, canvas.height);
+function resetBall() {
+  ballX = canvasWidth / 2;
+  ballY = canvasHeight / 2;
+  ballDX = ballSpeed;
+  ballDY = ballSpeed;
+}
 
-  // Draw ball and paddles
+function updatePaddles() {
+  const leftPaddleDY = (keys['w'] ? -5 : keys['s'] ? 5 : 0);
+  const rightPaddleDY = (keys['ArrowUp'] ? -5 : keys['ArrowDown'] ? 5 : 0);
+  leftPaddleY = Math.min(Math.max(leftPaddleY + leftPaddleDY, 0), canvasHeight - paddleHeight);
+  rightPaddleY = Math.min(Math.max(rightPaddleY + rightPaddleDY, 0), canvasHeight - paddleHeight);
+}
+
+function clearCanvas() {
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+}
+
+function draw() {
+  clearCanvas();
   drawBall();
   drawPaddles();
-}
-
-// Update the game
-function update() {
-  // Move paddles
-  moveLeftPaddle();
-  moveRightPaddle();
-
-  // Update ball
   updateBall();
+  updatePaddles();
+  requestAnimationFrame(draw);
 }
 
-// Start the game loop
-setInterval(function() {
-  update();
-  draw();
-}, 16);
-``
+const keys = {};
+
+function keydown(event) {
+  keys[event.key] = true;
+}
+
+function keyup(event) {
+  keys[event.key] = false;
+}
+
+createCanvas();
+resetBall();
+draw();
+
+document.addEventListener('keydown', keydown);
+document.addEventListener('keyup', keyup);
