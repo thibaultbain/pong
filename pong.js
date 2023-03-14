@@ -1,108 +1,95 @@
-// Initialize canvas and game objects
-var canvas = document.getElementById("game-canvas");
-var ctx = canvas.getContext("2d");
-
-var ball = {
-  x: canvas.width / 2,
-  y: canvas.height / 2,
-  radius: 10,
-  dx: 5,
-  dy: 5
+var config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 0 },
+            debug: false
+        }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
 };
 
-var player1 = {
-  x: 10,
-  y: canvas.height / 2 - 50,
-  width: 10,
-  height: 100
-};
+var game = new Phaser.Game(config);
+var ball;
+var player1;
+var player2;
+var cursors;
+var score1 = 0;
+var score2 = 0;
+var scoreText1;
+var scoreText2;
 
-var player2 = {
-  x: canvas.width - 20,
-  y: canvas.height / 2 - 50,
-  width: 10,
-  height: 100
-};
-
-// Create score variables and update function
-var player1Score = 0;
-var player2Score = 0;
-
-function updateScore(player) {
-  if (player === 1) {
-    player1Score++;
-    document.getElementById("player1-score").innerHTML = player1Score;
-  } else if (player === 2) {
-    player2Score++;
-    document.getElementById("player2-score").innerHTML = player2Score;
-  }
+function preload ()
+{
+    this.load.image('ball', 'assets/ball.png');
+    this.load.image('paddle', 'assets/paddle.png');
 }
 
-// Handle player movement
-function handlePlayerMovement() {
-  // Move player 1
-  if (keysPressed.up1 && player1.y > 0) {
-    player1.y -= 5;
-  } else if (keysPressed.down1 && player1.y < canvas.height - player1.height) {
-    player1.y += 5;
-  }
+function create ()
+{
+    ball = this.physics.add.image(400, 300, 'ball');
+    ball.setCollideWorldBounds(true);
+    ball.setBounce(1, 1);
 
-  // Move player 2
-  if (keysPressed.up2 && player2.y > 0) {
-    player2.y -= 5;
-  } else if (keysPressed.down2 && player2.y < canvas.height - player2.height) {
-    player2.y += 5;
-  }
+    player1 = this.physics.add.image(50, 300, 'paddle');
+    player1.setCollideWorldBounds(true);
+    player1.setImmovable(true);
+
+    player2 = this.physics.add.image(750, 300, 'paddle');
+    player2.setCollideWorldBounds(true);
+    player2.setImmovable(true);
+
+    cursors = this.input.keyboard.createCursorKeys();
+
+    scoreText1 = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });
+    scoreText2 = this.add.text(600, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });
+
+    this.physics.add.collider(ball, player1, function(){
+        ball.setVelocityX(350);
+        ball.setVelocityY(-Phaser.Math.Between(60, 120));
+    });
+    this.physics.add.collider(ball, player2, function(){
+        ball.setVelocityX(-350);
+        ball.setVelocityY(-Phaser.Math.Between(60, 120));
+    });
 }
 
-// Main game loop
-function gameLoop() {
-  // Clear canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+function update ()
+{
+    if (cursors.up.isDown)
+    {
+        player1.setVelocityY(-300);
+    }
+    else if (cursors.down.isDown)
+    {
+        player1.setVelocityY(300);
+    }
+    else
+    {
+        player1.setVelocityY(0);
+    }
 
-  // Move ball
-  ball.x += ball.dx;
-  ball.y += ball.dy;
+    player2.setVelocityY(ball.body.velocity.y);
 
-  // Bounce ball off walls
-  if (ball.y < ball.radius || ball.y > canvas.height - ball.radius) {
-    ball.dy = -ball.dy;
-  }
-
-  // Check if ball hits player 1
-  if (ball.x < player1.x + player1.width &&
-      ball.y > player1.y &&
-      ball.y < player1.y + player1.height) {
-    ball.dx = -ball.dx;
-  }
-
-  // Check if ball hits player 2
-  if (ball.x > player2.x - ball.radius &&
-      ball.y > player2.y &&
-      ball.y < player2.y + player2.height) {
-    ball.dx = -ball.dx;
-  }
-
-  // Check if ball goes out of bounds
-  if (ball.x < -ball.radius) {
-    updateScore(2); // Player 2 scores
-    resetBall();
-  } else if (ball.x > canvas.width + ball.radius) {
-    updateScore(1); // Player 1 scores
-    resetBall();
-  }
-
-  // Draw game objects
-  drawBall();
-  drawPaddle(player1);
-  drawPaddle(player2);
-
-  // Handle player movement
-  handlePlayerMovement();
-
-  // Request next animation frame
-  requestAnimationFrame(gameLoop);
+    if (ball.body.x < 0)
+    {
+        score2 += 1;
+        scoreText2.setText('Score: ' + score2);
+        ball.setPosition(400, 300);
+        ball.setVelocity(0, 0);
+    }
+    else if (ball.body.x > 800)
+    {
+        score1 += 1;
+        scoreText1.setText('Score: ' + score1);
+        ball.setPosition(400, 300);
+        ball.setVelocity(0, 0);
+    }
 }
-
-// Start game loop
-gameLoop();
