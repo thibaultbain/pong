@@ -38,6 +38,15 @@ const ball = {
   velocityY: 5
 };
 
+// Draw canvas
+function createCanvas() {
+  canvas = document.createElement('canvas');
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+  document.querySelector('.game').appendChild(canvas);
+  ctx = canvas.getContext('2d');
+}
+
 // Draw ball
 function drawBall() {
   context.beginPath();
