@@ -1,104 +1,93 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+const game = new Phaser.Game(640, 480, Phaser.AUTO, 'gameDiv', { preload: preload, create: create, update: update });
 
-const ball = {
-  x: canvas.width / 2,
-  y: canvas.height / 2,
-  radius: 10,
-  speed: 7,
-  velocityX: 5,
-  velocityY: 5,
-  color: "WHITE",
-};
+let ball;
+let ballVelocityX = 150;
+let ballVelocityY = -150;
 
-const user = {
-  x: 0,
-  y: (canvas.height - 100) / 2,
-  width: 10,
-  height: 100,
-  score: 0,
-  color: "GREEN",
-};
+let playerPaddle;
+let computerPaddle;
+let paddleSpeed = 400;
 
-const ai = {
-  x: canvas.width - 10,
-  y: (canvas.height - 100) / 2,
-  width: 10,
-  height: 100,
-  score: 0,
-  color: "RED",
-};
+let playerScore = 0;
+let computerScore = 0;
+let scoreText;
 
-function drawRect(x, y, w, h, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(x, y, w, h);
+function preload() {
+  // Nothing to preload since we're creating the ball and paddles programmatically
 }
 
-function drawCircle(x, y, r, color) {
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2, false);
-  ctx.closePath();
-  ctx.fill();
-}
-
-function drawText(text, x, y, color) {
-  ctx.fillStyle = color;
-  ctx.font = "45px fantasy";
-  ctx.fillText(text, x, y);
-}
-
-function drawNet() {
-  for (let i = 0; i <= canvas.height; i += 15) {
-    drawRect(canvas.width / 2 - 1, i, 2, 10, "WHITE");
-  }
-}
-
-function resetBall() {
-  ball.x = canvas.width / 2;
-  ball.y = canvas.height / 2;
-  ball.speed = 7;
-  ball.velocityX = -ball.velocityX;
-}
-
-function collisionDetect(player, ball) {
-  player.top = player.y;
-  player.bottom = player.y + player.height;
-  player.left = player.x;
-  player.right = player.x + player.width;
-
-  ball.top = ball.y - ball.radius;
-  ball.bottom = ball.y + ball.radius;
-  ball.left = ball.x - ball.radius;
-  ball.right = ball.x + ball.radius;
-
-  return (
-    ball.right > player.left &&
-    ball.left < player.right &&
-    ball.top < player.bottom &&
-    ball.bottom > player.top
-  );
+function create() {
+  createBall();
+  createPaddles();
+  createScoreText();
 }
 
 function update() {
-  ball.x += ball.velocityX;
-  ball.y += ball.velocityY;
+  movePlayerPaddle();
+  moveComputerPaddle();
+  checkBallPaddleCollision(playerPaddle);
+  checkBallPaddleCollision(computerPaddle);
+  checkBallWallCollision();
+  updateScore();
+}
 
-  // AI movement
-  let aiLevel = 0.1;
-  ai.y += (ball.y - (ai.y + ai.height / 2)) * aiLevel;
+function createBall() {
+  const ballRadius = 10;
 
-  if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
-    ball.velocityY = -ball.velocityY;
+  ball = game.add.graphics();
+  ball.beginFill(0xffffff);
+  ball.drawCircle(0, 0, ballRadius);
+  ball.x = game.world.centerX;
+  ball.y = game.world.centerY;
+}
+
+function createPaddles() {
+  const paddleWidth = 20;
+  const paddleHeight = 80;
+  const paddleDistanceFromEdge = 50;
+
+  // Player paddle
+  playerPaddle = game.add.graphics();
+  playerPaddle.beginFill(0xffffff);
+  playerPaddle.drawRect(0, 0, paddleWidth, paddleHeight);
+  playerPaddle.x = paddleDistanceFromEdge;
+  playerPaddle.y = game.world.centerY - paddleHeight / 2;
+
+  // Computer paddle
+  computerPaddle = game.add.graphics();
+  computerPaddle.beginFill(0xffffff);
+  computerPaddle.drawRect(0, 0, paddleWidth, paddleHeight);
+  computerPaddle.x = game.world.width - paddleWidth - paddleDistanceFromEdge;
+  computerPaddle.y = game.world.centerY - paddleHeight / 2;
+}
+
+function createScoreText() {
+  const textStyle = { font: "32px Arial", fill: "#ffffff", align: "center" };
+  scoreText = game.add.text(game.world.centerX, 50, `${playerScore} - ${computerScore}`, textStyle);
+  scoreText.anchor.setTo(0.5, 0);
+}
+
+function movePlayerPaddle() {
+  if (game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
+    playerPaddle.y -= paddleSpeed * game.time.physicsElapsed;
+  } else if (game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
+    playerPaddle.y += paddleSpeed * game.time.physicsElapsed;
   }
+}
 
-  let player = ball.x < canvas.width / 2 ? user : ai;
+function moveComputerPaddle() {
+  const computerPaddleSpeed = 200;
 
-  if (collisionDetect(player, ball)) {
-    let collidePoint = ball.y - (player.y + player.height / 2);
+  if (ball.y < computerPaddle.y + computerPaddle.height / 2) {
+    computerPaddle.y -= computerPaddleSpeed * game.time.physicsElapsed;
+  } else if (ball.y > computerPaddle.y + computerPaddle.height / 2) {
+    computerPaddle.y += computerPaddleSpeed * game.time.physicsElapsed;
+  }
+}
 
-    collidePoint = collidePoint / (player.height / 2);
+function checkBallPaddleCollision(paddle) {
+  const collisionPadding = 5;
 
-    let angleRad = (Math.PI / 4) * collidePoint;
-
-    let direction = ball.x < canvas.width / 
+  if (ball.x + ball.width / 2 >= paddle.x && ball.x - ball.width / 2 <= paddle.x + paddle.width) {
+    if (ball.y + ball.height / 2 + collisionPadding >= paddle.y && ball.y - ball.height / 2 - collisionPadding <= paddle.y + paddle.height) {
+      ballVelocityX = -ballVelocityX;
