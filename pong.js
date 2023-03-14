@@ -1,106 +1,104 @@
-const canvasWidth = 600;
-const canvasHeight = 400;
-const paddleWidth = 10;
-const paddleHeight = 100;
-const ballRadius = 5;
-const ballSpeed = 5;
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-let canvas;
-let ctx;
-let ballX;
-let ballY;
-let ballDX;
-let ballDY;
-let leftPaddleY;
-let rightPaddleY;
+const ball = {
+  x: canvas.width / 2,
+  y: canvas.height / 2,
+  radius: 10,
+  speed: 7,
+  velocityX: 5,
+  velocityY: 5,
+  color: "WHITE",
+};
 
-function createCanvas() {
-  const gameDiv = document.querySelector('.game');
-  canvas = document.createElement('canvas');
-  canvas.width = canvasWidth;
-  canvas.height = canvasHeight;
-  gameDiv.appendChild(canvas);
-  ctx = canvas.getContext('2d');
+const user = {
+  x: 0,
+  y: (canvas.height - 100) / 2,
+  width: 10,
+  height: 100,
+  score: 0,
+  color: "GREEN",
+};
+
+const ai = {
+  x: canvas.width - 10,
+  y: (canvas.height - 100) / 2,
+  width: 10,
+  height: 100,
+  score: 0,
+  color: "RED",
+};
+
+function drawRect(x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, w, h);
 }
 
-function drawBall() {
+function drawCircle(x, y, r, color) {
+  ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
-  ctx.fillStyle = 'white';
+  ctx.arc(x, y, r, 0, Math.PI * 2, false);
+  ctx.closePath();
   ctx.fill();
 }
 
-function drawPaddles() {
-  ctx.fillStyle = 'white';
-  ctx.fillRect(0, leftPaddleY, paddleWidth, paddleHeight);
-  ctx.fillRect(canvasWidth - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
+function drawText(text, x, y, color) {
+  ctx.fillStyle = color;
+  ctx.font = "45px fantasy";
+  ctx.fillText(text, x, y);
 }
 
-function updateBall() {
-  ballX += ballDX;
-  ballY += ballDY;
-  
-  if (ballY + ballRadius > canvasHeight || ballY - ballRadius < 0) {
-    ballDY *= -1;
-  }
-  
-  if (ballX + ballRadius > canvasWidth - paddleWidth) {
-    if (ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
-      ballDX *= -1;
-    } else {
-      resetBall();
-    }
-  }
-  
-  if (ballX - ballRadius < paddleWidth) {
-    if (ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
-      ballDX *= -1;
-    } else {
-      resetBall();
-    }
+function drawNet() {
+  for (let i = 0; i <= canvas.height; i += 15) {
+    drawRect(canvas.width / 2 - 1, i, 2, 10, "WHITE");
   }
 }
 
 function resetBall() {
-  ballX = canvasWidth / 2;
-  ballY = canvasHeight / 2;
-  ballDX = ballSpeed;
-  ballDY = ballSpeed;
+  ball.x = canvas.width / 2;
+  ball.y = canvas.height / 2;
+  ball.speed = 7;
+  ball.velocityX = -ball.velocityX;
 }
 
-function updatePaddles() {
-  const leftPaddleDY = (keys['w'] ? -5 : keys['s'] ? 5 : 0);
-  const rightPaddleDY = (keys['ArrowUp'] ? -5 : keys['ArrowDown'] ? 5 : 0);
-  leftPaddleY = Math.min(Math.max(leftPaddleY + leftPaddleDY, 0), canvasHeight - paddleHeight);
-  rightPaddleY = Math.min(Math.max(rightPaddleY + rightPaddleDY, 0), canvasHeight - paddleHeight);
+function collisionDetect(player, ball) {
+  player.top = player.y;
+  player.bottom = player.y + player.height;
+  player.left = player.x;
+  player.right = player.x + player.width;
+
+  ball.top = ball.y - ball.radius;
+  ball.bottom = ball.y + ball.radius;
+  ball.left = ball.x - ball.radius;
+  ball.right = ball.x + ball.radius;
+
+  return (
+    ball.right > player.left &&
+    ball.left < player.right &&
+    ball.top < player.bottom &&
+    ball.bottom > player.top
+  );
 }
 
-function clearCanvas() {
-  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-}
+function update() {
+  ball.x += ball.velocityX;
+  ball.y += ball.velocityY;
 
-function draw() {
-  clearCanvas();
-  drawBall();
-  drawPaddles();
-  updateBall();
-  updatePaddles();
-  requestAnimationFrame(draw);
-}
+  // AI movement
+  let aiLevel = 0.1;
+  ai.y += (ball.y - (ai.y + ai.height / 2)) * aiLevel;
 
-const keys = {};
+  if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
+    ball.velocityY = -ball.velocityY;
+  }
 
-function keydown(event) {
-  keys[event.key] = true;
-}
+  let player = ball.x < canvas.width / 2 ? user : ai;
 
-function keyup(event) {
-  keys[event.key] = false;
-}
+  if (collisionDetect(player, ball)) {
+    let collidePoint = ball.y - (player.y + player.height / 2);
 
-createCanvas();
-resetBall();
-draw();
+    collidePoint = collidePoint / (player.height / 2);
 
-document.addEventListener('keydown', keydown);
-document.addEventListener('keyup', keyup);
+    let angleRad = (Math.PI / 4) * collidePoint;
+
+    let direction = ball.x < canvas.width / 
