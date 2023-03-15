@@ -1,94 +1,95 @@
-const canvas = document.getElementById('gameCanvas');
+const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-const BALL_RADIUS = 10;
-const PADDLE_WIDTH = 10;
-const PADDLE_HEIGHT = 100;
-const WINNING_SCORE = 3;
-
+// Game variables
 let ballX = canvas.width / 2;
 let ballY = canvas.height / 2;
-let ballSpeedX = 5;
-let ballSpeedY = 0;
+let ballRadius = 10;
+let ballSpeed = 5;
+let ballDirectionX = 1;
+let ballDirectionY = 1;
 
-let player1Score = 0;
-let player2Score = 0;
+let paddleHeight = 80;
+let paddleWidth = 10;
+let leftPaddleY = (canvas.height - paddleHeight) / 2;
+let rightPaddleY = (canvas.height - paddleHeight) / 2;
+let paddleSpeed = 5;
 
-let paddle1Y = canvas.height / 2 - PADDLE_HEIGHT / 2;
-let paddle2Y = canvas.height / 2 - PADDLE_HEIGHT / 2;
+let scoreLeft = 0;
+let scoreRight = 0;
 
-let showingWinScreen = false;
+// Event listeners
+document.addEventListener('keydown', handleKeyDown);
 
-function calculateMousePos(evt) {
-  const rect = canvas.getBoundingClientRect();
-  const root = document.documentElement;
-  const mouseX = evt.clientX - rect.left - root.scrollLeft;
-  const mouseY = evt.clientY - rect.top - root.scrollTop;
-  return {
-    x: mouseX,
-    y: mouseY
-  };
-}
-
-function handleMouseClick(evt) {
-  if (showingWinScreen) {
-    player1Score = 0;
-    player2Score = 0;
-    showingWinScreen = false;
-  }
-}
-
-function drawNet() {
-  for (let i = 0; i < canvas.height; i += 40) {
-    drawRect(canvas.width / 2 - 1, i, 2, 20, 'white');
-  }
-}
-
-function drawTable() {
-  // table
-  drawRect(0, 0, canvas.width, canvas.height, 'green');
-  // net
-  drawNet();
-  // paddles
-  drawRect(0, paddle1Y, PADDLE_WIDTH, PADDLE_HEIGHT, 'white');
-  drawRect(canvas.width - PADDLE_WIDTH, paddle2Y, PADDLE_WIDTH, PADDLE_HEIGHT, 'white');
-  // ball
-  drawCircle(ballX, ballY, BALL_RADIUS, 'white');
-  // scores
-  drawText(player1Score, canvas.width / 4, 100, 'white');
-  drawText(player2Score, 3 * canvas.width / 4, 100, 'white');
-}
-
-function drawCircle(centerX, centerY, radius, color) {
-  ctx.fillStyle = color;
+// Helper functions
+function drawBall() {
   ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
+  ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+  ctx.fillStyle = 'white';
   ctx.fill();
+  ctx.closePath();
 }
 
-function drawRect(leftX, topY, width, height, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(leftX, topY, width, height);
+function drawPaddles() {
+  // Left paddle
+  ctx.beginPath();
+  ctx.rect(0, leftPaddleY, paddleWidth, paddleHeight);
+  ctx.fillStyle = 'white';
+  ctx.fill();
+  ctx.closePath();
+
+  // Right paddle
+  ctx.beginPath();
+  ctx.rect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
+  ctx.fillStyle = 'white';
+  ctx.fill();
+  ctx.closePath();
 }
 
-function drawText(text, x, y, color) {
-  ctx.fillStyle = color;
-  ctx.font = '75px sans-serif';
-  ctx.fillText(text, x, y);
+function drawScores() {
+  ctx.font = '32px Arial';
+  ctx.fillStyle = 'white';
+  ctx.textAlign = 'center';
+  ctx.fillText(scoreLeft.toString(), canvas.width / 4, 50);
+  ctx.fillText(scoreRight.toString(), (canvas.width / 4) * 3, 50);
 }
 
-function ballReset() {
-  if (player1Score >= WINNING_SCORE || player2Score >= WINNING_SCORE) {
-    showingWinScreen = true;
+function handleKeyDown(e) {
+  if (e.keyCode === 13) {
+    setInterval(updateGame, 20);
+  }
+}
+
+function updateGame() {
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Update ball position
+  ballX += ballSpeed * ballDirectionX;
+  ballY += ballSpeed * ballDirectionY;
+
+  // Bounce off top and bottom walls
+  if (ballY - ballRadius <= 0 || ballY + ballRadius >= canvas.height) {
+    ballDirectionY *= -1;
   }
 
-  ballSpeedX = -ballSpeedX;
-  ballX = canvas.width / 2;
-  ballY = canvas.height / 2;
-}
+  // Check for paddle collisions
+  if (ballX - ballRadius <= paddleWidth && ballY >= leftPaddleY && ballY <= leftPaddleY + paddleHeight) {
+    ballDirectionX *= -1;
+  }
 
-function computerMovement() {
-  const paddle2YCenter = paddle2Y + PADDLE_HEIGHT / 2;
-  if (paddle2YCenter < ballY - 35) {
-    paddle2Y += 6;
-  } else if (paddle2YCenter > ballY + 
+  if (ballX + ballRadius >= canvas.width - paddleWidth && ballY >= rightPaddleY && ballY <= rightPaddleY + paddleHeight) {
+    ballDirectionX *= -1;
+  }
+
+  // Check for score
+  if (ballX - ballRadius <= 0) {
+    scoreRight++;
+    ballX = canvas.width / 2;
+    ballY = canvas.height / 2;
+    ballDirectionX *= -1;
+  }
+
+  if (ballX + ballRadius >= canvas.width) {
+    scoreLeft++;
+    ballX = canvas.width / 2
