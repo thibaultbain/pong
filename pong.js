@@ -1,95 +1,101 @@
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+const config = {
+  type: Phaser.AUTO,
+  parent: 'game-container',
+  width: 600,
+  height: 400,
+  physics: {
+    default: 'arcade',
+    arcade: {
+      gravity: { y: 0 },
+      debug: false
+    }
+  },
+  scene: {
+    preload: preload,
+    create: create,
+    update: update
+  }
+};
 
-// Game variables
-let ballX = canvas.width / 2;
-let ballY = canvas.height / 2;
-let ballRadius = 10;
-let ballSpeed = 5;
-let ballDirectionX = 1;
-let ballDirectionY = 1;
+const game = new Phaser.Game(config);
 
-let paddleHeight = 80;
-let paddleWidth = 10;
-let leftPaddleY = (canvas.height - paddleHeight) / 2;
-let rightPaddleY = (canvas.height - paddleHeight) / 2;
-let paddleSpeed = 5;
-
+let ball;
+let leftPaddle;
+let rightPaddle;
+let cursors;
 let scoreLeft = 0;
 let scoreRight = 0;
+let scoreText;
 
-// Event listeners
-document.addEventListener('keydown', handleKeyDown);
-
-// Helper functions
-function drawBall() {
-  ctx.beginPath();
-  ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
-  ctx.fillStyle = 'white';
-  ctx.fill();
-  ctx.closePath();
+function preload() {
+  this.load.image('ball', 'https://s3.amazonaws.com/codecademy-content/courses/learn-phaser/physics/ball.png');
 }
 
-function drawPaddles() {
-  // Left paddle
-  ctx.beginPath();
-  ctx.rect(0, leftPaddleY, paddleWidth, paddleHeight);
-  ctx.fillStyle = 'white';
-  ctx.fill();
-  ctx.closePath();
+function create() {
+  // Create ball
+  ball = this.physics.add.image(300, 200, 'ball');
+  ball.setCollideWorldBounds(true);
+  ball.setBounce(1);
 
-  // Right paddle
-  ctx.beginPath();
-  ctx.rect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
-  ctx.fillStyle = 'white';
-  ctx.fill();
-  ctx.closePath();
+  // Create left paddle
+  leftPaddle = this.physics.add.rectangle(50, 200, 10, 80, 0xFFFFFF);
+  leftPaddle.setImmovable(true);
+
+  // Create right paddle
+  rightPaddle = this.physics.add.rectangle(550, 200, 10, 80, 0xFFFFFF);
+  rightPaddle.setImmovable(true);
+
+  // Create score text
+  scoreText = this.add.text(300, 50, `${scoreLeft} - ${scoreRight}`, { fontFamily: 'Arial', fontSize: 32, color: '#FFFFFF' }).setOrigin(0.5);
+
+  // Add keyboard input
+  cursors = this.input.keyboard.createCursorKeys();
+
+  // Start game on Enter key press
+  this.input.keyboard.on('keydown-ENTER', function() {
+    ball.setVelocityX(150);
+    ball.setVelocityY(-150);
+  });
 }
 
-function drawScores() {
-  ctx.font = '32px Arial';
-  ctx.fillStyle = 'white';
-  ctx.textAlign = 'center';
-  ctx.fillText(scoreLeft.toString(), canvas.width / 4, 50);
-  ctx.fillText(scoreRight.toString(), (canvas.width / 4) * 3, 50);
-}
-
-function handleKeyDown(e) {
-  if (e.keyCode === 13) {
-    setInterval(updateGame, 20);
-  }
-}
-
-function updateGame() {
-  // Clear canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Update ball position
-  ballX += ballSpeed * ballDirectionX;
-  ballY += ballSpeed * ballDirectionY;
-
-  // Bounce off top and bottom walls
-  if (ballY - ballRadius <= 0 || ballY + ballRadius >= canvas.height) {
-    ballDirectionY *= -1;
+function update() {
+  // Move left paddle with up and down arrow keys
+  if (cursors.up.isDown) {
+    leftPaddle.setVelocityY(-300);
+  } else if (cursors.down.isDown) {
+    leftPaddle.setVelocityY(300);
+  } else {
+    leftPaddle.setVelocityY(0);
   }
 
-  // Check for paddle collisions
-  if (ballX - ballRadius <= paddleWidth && ballY >= leftPaddleY && ballY <= leftPaddleY + paddleHeight) {
-    ballDirectionX *= -1;
+  // Prevent left paddle from leaving the screen
+  if (leftPaddle.y < 40) {
+    leftPaddle.y = 40;
+  } else if (leftPaddle.y > 360) {
+    leftPaddle.y = 360;
   }
 
-  if (ballX + ballRadius >= canvas.width - paddleWidth && ballY >= rightPaddleY && ballY <= rightPaddleY + paddleHeight) {
-    ballDirectionX *= -1;
+  // Move right paddle with W and S keys
+  if (cursors.W.isDown) {
+    rightPaddle.setVelocityY(-300);
+  } else if (cursors.S.isDown) {
+    rightPaddle.setVelocityY(300);
+  } else {
+    rightPaddle.setVelocityY(0);
   }
 
-  // Check for score
-  if (ballX - ballRadius <= 0) {
-    scoreRight++;
-    ballX = canvas.width / 2;
-    ballY = canvas.height / 2;
-    ballDirectionX *= -1;
+  // Prevent right paddle from leaving the screen
+  if (rightPaddle.y < 40) {
+    rightPaddle.y = 40;
+  } else if (rightPaddle.y > 360) {
+    rightPaddle.y = 360;
   }
 
-  if (ballX + ballRadius >= canvas.width) {
-    scoreLeft++;
-    ballX = canvas.width / 2
+  // Update score text
+  scoreText.setText(`${scoreLeft} - ${scoreRight}`);
+
+  // Check for ball collision with paddles
+  this.physics.add.collider(ball, leftPaddle, function() {
+    ball.setVelocityX(300);
+    let diff = ball.y - leftPaddle.y;
+    ball.set
