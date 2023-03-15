@@ -37,12 +37,12 @@ function create() {
   ball.setCollideWorldBounds(true);
   ball.setBounce(1);
 
-  // Create left paddle
-  leftPaddle = this.physics.add.rectangle(50, 200, 10, 80, 0xFFFFFF);
+  // Create left paddle with red fill
+  leftPaddle = this.physics.add.rectangle(50, 200, 10, 80, 0xFF0000);
   leftPaddle.setImmovable(true);
 
-  // Create right paddle
-  rightPaddle = this.physics.add.rectangle(550, 200, 10, 80, 0xFFFFFF);
+  // Create right paddle with blue fill
+  rightPaddle = this.physics.add.rectangle(550, 200, 10, 80, 0x0000FF);
   rightPaddle.setImmovable(true);
 
   // Create score text
@@ -98,4 +98,3 @@ function update() {
   this.physics.add.collider(ball, leftPaddle, function() {
     ball.setVelocityX(300);
     let diff = ball.y - leftPaddle.y;
-    ball.set
