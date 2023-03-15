@@ -1,130 +1,148 @@
-const config = {
-  type: Phaser.AUTO,
-  width: 400,
-  height: 400,
-  parent: 'game-container',
-  physics: {
-    default: 'arcade',
-    arcade: {
-      gravity: { y: 0 },
-      debug: false
-    }
-  },
-  scene: {
-    preload: preload,
-    create: create,
-    update: update
-  }
-};
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
 
-const game = new Phaser.Game(config);
+// Game variables
+let ballX = canvas.width / 2;
+let ballY = canvas.height / 2;
+let ballRadius = 10;
+let ballSpeed = 5;
+let ballDirectionX = 1;
+let ballDirectionY = 1;
 
-let player;
-let ball;
-let aiPlayer;
-let playerScore = 0;
-let aiScore = 0;
-let ballSpeed = 200;
-let ballAngle = 0;
+let paddleHeight = 80;
+let paddleWidth = 10;
+let leftPaddleY = (canvas.height - paddleHeight) / 2;
+let rightPaddleY = (canvas.height - paddleHeight) / 2;
+let paddleSpeed = 5;
 
-function preload() {
-  this.load.image('player', 'https://uploads-ssl.webflow.com/59443eafc389bf3527eb8111/6411367dc858d930bab2fe22_paddle.svg');
-  this.load.image('ai', 'https://uploads-ssl.webflow.com/59443eafc389bf3527eb8111/6411367dc858d930bab2fe22_paddle.svg');
-  this.load.image('ball', 'https://uploads-ssl.webflow.com/59443eafc389bf3527eb8111/6411367d56f2916ff6c1468b_ball.svg');
+let scoreLeft = 0;
+let scoreRight = 0;
+
+// Event listeners
+document.addEventListener('keydown', handleKeyDown);
+
+// Helper functions
+function drawBall() {
+  ctx.beginPath();
+  ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+  ctx.fillStyle = 'white';
+  ctx.fill();
+  ctx.closePath();
 }
 
-function create() {
-  // create the player
-  player = this.physics.add.sprite(30, 300, 'player');
-  player.setCollideWorldBounds(true);
-  player.setImmovable(true);
+function drawPaddles() {
+  // Left paddle
+  ctx.beginPath();
+  ctx.rect(0, leftPaddleY, paddleWidth, paddleHeight);
+  ctx.fillStyle = 'white';
+  ctx.fill();
+  ctx.closePath();
 
-  // create the AI player
-  aiPlayer = this.physics.add.sprite(770, 300, 'ai');
-  aiPlayer.setCollideWorldBounds(true);
-  aiPlayer.setImmovable(true);
-
-  // create the ball
-  ball = this.physics.add.sprite(400, 300, 'ball');
-  ball.setCollideWorldBounds(true);
-  ball.setBounce(1);
-
-  // add collisions
-  this.physics.add.collider(player, ball, hitPlayer, null, this);
-  this.physics.add.collider(aiPlayer, ball, hitAiPlayer, null, this);
-
-  // add text for the score
-  const textStyle = { fontSize: '32px', fill: '#000' };
-  this.add.text(16, 16, 'Player: 0', textStyle);
-  this.add.text(650, 16, 'AI: 0', textStyle);
-
-  // add keyboard input
-  this.input.keyboard.on('keydown-RETURN', startGame, this);
-  this.input.keyboard.on('keydown-UP', movePlayerUp, this);
-  this.input.keyboard.on('keydown-DOWN', movePlayerDown, this);
-
-  // set the ball in motion
-  ball.setVelocity(ballSpeed, ballAngle);
+  // Right paddle
+  ctx.beginPath();
+  ctx.rect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
+  ctx.fillStyle = 'white';
+  ctx.fill();
+  ctx.closePath();
 }
 
-function update() {
-  // move the AI player towards the ball
-  if (ball.y < aiPlayer.y) {
-    aiPlayer.setVelocityY(-200);
-  } else if (ball.y > aiPlayer.y) {
-    aiPlayer.setVelocityY(200);
-  } else {
-    aiPlayer.setVelocityY(0);
-  }
+function drawScores() {
+  ctx.font = '32px Arial';
+  ctx.fillStyle = 'white';
+  ctx.textAlign = 'center';
+  ctx.fillText(scoreLeft.toString(), canvas.width / 4, 50);
+  ctx.fillText(scoreRight.toString(), (canvas.width / 4) * 3, 50);
+}
 
-  // check for scoring
-  if (ball.x < 0) {
-    aiScore++;
-    resetGame();
-  } else if (ball.x > 800) {
-    playerScore++;
-    resetGame();
+function handleKeyDown(e) {
+  if (e.keyCode === 13) {
+    setInterval(updateGame, 20);
   }
 }
 
-function startGame() {
-  ballSpeed = Phaser.Math.Between(200, 400);
-ballAngle = Phaser.Math.Between(-90, 90);
-ball.setVelocity(ballSpeed, ballAngle);
+function updateGame() {
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Update ball position
+  ballX += ballSpeed * ballDirectionX;
+  ballY += ballSpeed * ballDirectionY;
+
+  // Bounce off top and bottom walls
+  if (ballY - ballRadius <= 0 || ballY + ballRadius >= canvas.height) {
+    ballDirectionY *= -1;
+  }
+
+  // Check for paddle collisions
+  if (ballX - ballRadius <= paddleWidth && ballY >= leftPaddleY && ballY <= leftPaddleY + paddleHeight) {
+    ballDirectionX *= -1;
+  }
+
+  if (ballX + ballRadius >= canvas.width - paddleWidth && ballY >= rightPaddleY && ballY <= rightPaddleY + paddleHeight) {
+    ballDirectionX *= -1;
+  }
+
+  // Check for score
+  if (ballX - ballRadius <= 0) {
+    scoreRight++;
+    ballX = canvas.width / 2;
+    ballY = canvas.height / 2;
+    ballDirectionX *= -1;
+  }
+
+  if (ballX + ballRadius >= canvas.width) {
+    scoreLeft++;
+    ballX = canvas.width / 2
+ballY = canvas.height / 2;
+ballDirectionX *= -1;
 }
 
-function movePlayerUp() {
-player.setVelocityY(-300);
+// Update paddle position
+if (leftPaddleY > 0 && rightPaddleY > 0) {
+if (keysPressed['w']) {
+leftPaddleY -= paddleSpeed;
+}
+if (keysPressed['s']) {
+  leftPaddleY += paddleSpeed;
 }
 
-function movePlayerDown() {
-player.setVelocityY(300);
+if (keysPressed['ArrowUp']) {
+  rightPaddleY -= paddleSpeed;
 }
 
-function hitPlayer() {
-ball.setVelocityY(Phaser.Math.Between(-120, 120));
-playerScore++;
-updateScore();
+if (keysPressed['ArrowDown']) {
+  rightPaddleY += paddleSpeed;
+}
 }
 
-function hitAiPlayer() {
-ball.setVelocityY(Phaser.Math.Between(-120, 120));
-aiScore++;
-updateScore();
+// Keep paddles within canvas bounds
+if (leftPaddleY < 0) {
+leftPaddleY = 0;
 }
 
-function resetGame() {
-ball.setVelocity(0);
-ball.setPosition(400, 300);
-player.setPosition(30, 300);
-aiPlayer.setPosition(770, 300);
-updateScore();
+if (leftPaddleY + paddleHeight > canvas.height) {
+leftPaddleY = canvas.height - paddleHeight;
 }
 
-function updateScore() {
-const playerText = Player: ${playerScore};
-const aiText = AI: ${aiScore};
-const textStyle = { fontSize: '32px', fill: '#000' };
-this.children.list[0].setText(playerText);
-this.children.list[1].setText(aiText);
+if (rightPaddleY < 0) {
+rightPaddleY = 0;
 }
+
+if (rightPaddleY + paddleHeight > canvas.height) {
+rightPaddleY = canvas.height - paddleHeight;
+}
+
+// Draw game elements
+drawBall();
+drawPaddles();
+drawScores();
+}
+
+const keysPressed = {};
+document.addEventListener('keydown', (e) => {
+keysPressed[e.key] = true;
+});
+
+document.addEventListener('keyup', (e) => {
+keysPressed[e.key] = false;
+});
