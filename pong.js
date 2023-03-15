@@ -92,4 +92,6 @@ function updateGame() {
 
   if (ballX + ballRadius >= canvas.width) {
     scoreLeft++;
-    ballX = canvas.width / 2
+    ballX = canvas.width / 2;
+    ballY = canvas.height / 2;
+    ballDirection
