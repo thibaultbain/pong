@@ -1,135 +1,95 @@
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
 
-// Game variables
-let ballX = canvas.width / 2;
-let ballY = canvas.height / 2;
-let ballRadius = 10;
-let ballSpeed = 5;
-let ballDirectionX = 1;
-let ballDirectionY = 1;
+  // Initialize the canvas and game variables
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
 
-let paddleHeight = 80;
-let paddleWidth = 10;
-let leftPaddleY = (canvas.height - paddleHeight) / 2;
-let rightPaddleY = (canvas.height - paddleHeight) / 2;
-let paddleSpeed = 5;
+  let ballX = canvas.width / 2;
+  let ballY = canvas.height / 2;
+  let ballDirectionX = 3;
+  let ballDirectionY = 3;
+  let ballRadius = 10;
 
-let scoreLeft = 0;
-let scoreRight = 0;
+  let leftPaddleY = canvas.height / 2 - 50;
+  let rightPaddleY = canvas.height / 2 - 50;
+  let paddleHeight = 100;
+  let paddleWidth = 10;
+  let paddleSpeed = 5;
 
-// Event listeners
-document.addEventListener('keydown', handleKeyDown);
+  let leftScore = 0;
+  let rightScore = 0;
 
-// Helper functions
-function drawBall() {
-  ctx.beginPath();
-  ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
-  ctx.fillStyle = 'white';
-  ctx.fill();
-  ctx.closePath();
-}
-
-function drawPaddles() {
-  // Left paddle
-  ctx.beginPath();
-  ctx.rect(0, leftPaddleY, paddleWidth, paddleHeight);
-  ctx.fillStyle = 'white';
-  ctx.fill();
-  ctx.closePath();
-
-  // Right paddle
-  ctx.beginPath();
-  ctx.rect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
-  ctx.fillStyle = 'white';
-  ctx.fill();
-  ctx.closePath();
-}
-
-function drawScores() {
-  ctx.font = '32px Arial';
-  ctx.fillStyle = 'white';
-  ctx.textAlign = 'center';
-  ctx.fillText(scoreLeft.toString(), canvas.width / 4, 50);
-  ctx.fillText(scoreRight.toString(), (canvas.width / 4) * 3, 50);
-}
-
-function handleKeyDown(e) {
-  if (e.keyCode === 13) {
-    setInterval(updateGame, 20);
-  }
-}
-
-function updateGame() {
-  // Clear canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Update ball position
-  ballX += ballSpeed * ballDirectionX;
-  ballY += ballSpeed * ballDirectionY;
-
-  // Bounce off top and bottom walls
-  if (ballY - ballRadius <= 0 || ballY + ballRadius >= canvas.height) {
-    ballDirectionY *= -1;
+  // Helper function to draw the ball
+  function drawBall() {
+    ctx.beginPath();
+    ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.closePath();
   }
 
-  // Check for paddle collisions
-  if (ballX - ballRadius <= paddleWidth && ballY >= leftPaddleY && ballY <= leftPaddleY + paddleHeight) {
-    ballDirectionX *= -1;
+  // Helper function to draw the paddles
+  function drawPaddles() {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, leftPaddleY, paddleWidth, paddleHeight);
+    ctx.fillRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
   }
 
-  if (ballX + ballRadius >= canvas.width - paddleWidth && ballY >= rightPaddleY && ballY <= rightPaddleY + paddleHeight) {
-    ballDirectionX *= -1;
+  // Helper function to draw the scores
+  function drawScores() {
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '48px Arial';
+    ctx.fillText(leftScore, canvas.width / 2 - 80, 50);
+    ctx.fillText(rightScore, canvas.width / 2 + 40, 50);
   }
 
-  // Check for score
-  if (ballX - ballRadius <= 0) {
-    scoreRight++;
-    ballX = canvas.width / 2;
-    ballY = canvas.height / 2;
-    ballDirectionX *= -1;
-  }
+  // Core game logic function
+  function updateGame() {
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if (ballX + ballRadius >= canvas.width) {
-    scoreLeft++;
-    ballX = canvas.width / 2
-ballY = canvas.height / 2;
-ballDirectionX *= -1;
-}
+    // Update ball position
+    ballX += ballDirectionX;
+    ballY += ballDirectionY;
 
-// Update paddle position
-if (leftPaddleY > 0 && rightPaddleY > 0) {
-if (keysPressed['w']) {
-leftPaddleY -= paddleSpeed;
-}
-if (keysPressed['s']) {
+    // Check for collision with the walls
+    if (ballY + ballRadius > canvas.height || ballY - ballRadius < 0) {
+      ballDirectionY *= -1;
+    }
+
+    // Check for collision with the left paddle
+    if (ballX - ballRadius < paddleWidth && ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
+      ballDirectionX *= -1;
+    }
+
+    // Check for collision with the right paddle
+    if (ballX + ballRadius > canvas.width - paddleWidth && ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
+      ballDirectionX *= -1;
+    }
+
+    // Check for scoring
+    if (ballX - ballRadius < 0) {
+      rightScore++;
+      ballX = canvas.width / 2;
+      ballY = canvas.height / 2;
+      ballDirectionX *= -1;
+    } else if (ballX + ballRadius > canvas.width) {
+      leftScore++;
+      ballX = canvas.width / 2;
+      ballY = canvas.height / 2;
+      ballDirectionX *= -1;
+    }
+
+// Update paddle positions
+if (keys[87] && leftPaddleY > 0) { // W key
+  leftPaddleY -= paddleSpeed;
+} else if (keys[83] && leftPaddleY + paddleHeight < canvas.height) { // S key
   leftPaddleY += paddleSpeed;
 }
 
-if (keysPressed['ArrowUp']) {
+if (keys[38] && rightPaddleY > 0) { // Up arrow key
   rightPaddleY -= paddleSpeed;
-}
-
-if (keysPressed['ArrowDown']) {
+} else if (keys[40] && rightPaddleY + paddleHeight < canvas.height) { // Down arrow key
   rightPaddleY += paddleSpeed;
-}
-}
-
-// Keep paddles within canvas bounds
-if (leftPaddleY < 0) {
-leftPaddleY = 0;
-}
-
-if (leftPaddleY + paddleHeight > canvas.height) {
-leftPaddleY = canvas.height - paddleHeight;
-}
-
-if (rightPaddleY < 0) {
-rightPaddleY = 0;
-}
-
-if (rightPaddleY + paddleHeight > canvas.height) {
-rightPaddleY = canvas.height - paddleHeight;
 }
 
 // Draw game elements
@@ -138,11 +98,19 @@ drawPaddles();
 drawScores();
 }
 
-const keysPressed = {};
-document.addEventListener('keydown', (e) => {
-keysPressed[e.key] = true;
+// Start the game when the user presses the Enter key
+document.addEventListener('keydown', (event) => {
+if (event.key === 'Enter') {
+setInterval(updateGame, 10);
+}
 });
 
-document.addEventListener('keyup', (e) => {
-keysPressed[e.key] = false;
+// Track key presses for the paddles
+let keys = {};
+document.addEventListener('keydown', (event) => {
+keys[event.keyCode] = true;
+});
+
+document.addEventListener('keyup', (event) => {
+delete keys[event.keyCode];
 });
