@@ -1,104 +1,63 @@
-// Initialize Phaser game instance
-const game = new Phaser.Game({
-  type: Phaser.AUTO,
-  width: "100%",
-  height: "100%",
-  backgroundColor: "#000000",
-  scale: {
-    mode: Phaser.Scale.RESIZE,
-    parent: "game-container",
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-  },
-  physics: {
-    default: "arcade",
-    arcade: {
-      gravity: false,
-      debug: false,
-    },
-  },
-  scene: {
-    preload: preload,
-    create: create,
-    update: update,
-  },
-});
+		var config = {
+			type: Phaser.AUTO,
+			scale: {
+				mode: Phaser.Scale.FIT,
+				parent: 'game-container',
+				autoCenter: Phaser.Scale.CENTER_BOTH
+			},
+			width: 800,
+			height: 600,
+			backgroundColor: '#000000',
+			scene: {
+				preload: preload,
+				create: create,
+				update: update
+			}
+		};
 
-// Declare game variables
-let paddleLeft;
-let paddleRight;
-let ball;
-let gameStarted = false;
+		var game = new Phaser.Game(config);
 
-function preload() {
-  // Load assets
-  this.load.image("paddle", "https://uploads-ssl.webflow.com/59443eafc389bf3527eb8111/6411367dc858d930bab2fe22_paddle.svg");
-  this.load.image("ball", "https://uploads-ssl.webflow.com/59443eafc389bf3527eb8111/6411367d56f2916ff6c1468b_ball.svg");
-}
+		var userPaddle;
+		var aiPaddle;
+		var ball;
+		var ballVelocity = 200;
 
-function create() {
-  // Create left paddle
-  paddleLeft = this.physics.add.sprite(0, this.game.canvas.height / 2, "paddle");
-  paddleLeft.setOrigin(0, 0.5);
-  paddleLeft.setScale(this.game.canvas.width / 600);
+		function preload() {
+			this.load.image('paddle', 'https://uploads-ssl.webflow.com/59443eafc389bf3527eb8111/6411367dc858d930bab2fe22_paddle.svg');
+			this.load.image('ball', 'https://uploads-ssl.webflow.com/59443eafc389bf3527eb8111/6411367d56f2916ff6c1468b_ball.svg');
+		}
 
-  // Create right paddle (AI)
-  paddleRight = this.physics.add.sprite(this.game.canvas.width, this.game.canvas.height / 2, "paddle");
-  paddleRight.setOrigin(1, 0.5);
-  paddleRight.setScale(this.game.canvas.width / 600);
+		function create() {
+			userPaddle = this.physics.add.sprite(50, this.cameras.main.centerY, 'paddle').setScale(0.5);
+			userPaddle.setCollideWorldBounds(true);
+			userPaddle.setImmovable(true);
 
-  // Create ball
-  ball = this.physics.add.sprite(this.game.canvas.width / 2, this.game.canvas.height / 2, "ball");
-  ball.setOrigin(0.5);
-  ball.setScale(this.game.canvas.width / 600);
+			aiPaddle = this.physics.add.sprite(this.cameras.main.width - 50, this.cameras.main.centerY, 'paddle').setScale(0.5);
+			aiPaddle.setCollideWorldBounds(true);
+			aiPaddle.setImmovable(true);
 
-  // Set collision boundaries
-  this.physics.world.setBoundsCollision(false, false, true, true);
+			ball = this.physics.add.sprite(this.cameras.main.centerX, this.cameras.main.centerY, 'ball').setScale(0.5);
+			ball.setCollideWorldBounds(true);
+			ball.setBounce(1, 1);
+			ball.setVelocity(ballVelocity, ballVelocity);
+		}
 
-  // Set paddle collision with game boundaries
-  paddleLeft.setCollideWorldBounds(true);
-  paddleRight.setCollideWorldBounds(true);
+		function update() {
+			this.input.keyboard.on('keydown-RETURN', function () {
+				ball.setVelocity(ballVelocity, ballVelocity);
+			});
 
-  // Set paddle immovable
-  paddleLeft.setImmovable(true);
-  paddleRight.setImmovable(true);
+			userPaddle.setVelocityY(0);
 
-  // Set ball bounce behavior
-  ball.setBounce(1, 1);
+			if (this.input.keyboard.checkDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP), 500)) {
+				userPaddle.setVelocityY(-400);
+			} else if (this.input.keyboard.checkDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN), 500)) {
+				userPaddle.setVelocityY(400);
+			}
 
-  // Start game on return key press
-  this.input.keyboard.on("keydown-ENTER", function () {
-    gameStarted = true;
-  });
-}
-
-function update() {
-  // Move left paddle up/down
-  if (this.input.keyboard.isDown(Phaser.Input.Keyboard.KeyCodes.UP)) {
-    paddleLeft.setVelocityY(-400);
-  } else if (this.input.keyboard.isDown(Phaser.Input.Keyboard.KeyCodes.DOWN)) {
-    paddleLeft.setVelocityY(400);
-  } else {
-    paddleLeft.setVelocityY(0);
-  }
-
-  // Move right paddle towards ball
-  if (gameStarted) {
-    if (paddleRight.y < ball.y) {
-      paddleRight.setVelocityY(400);
-    } else if (paddleRight.y > ball.y) {
-      paddleRight.setVelocityY(-400);
-    } else {
-      paddleRight.setVelocityY(0);
-    }
-  }
-
-  // Start ball movement when game is started
-  if (gameStarted && ball.body.velocity.x === 0 && ball.body.velocity.y === 0) {
-    ball.setVelocityX(400);
-    ball.setVelocityY(200);
-  }
-
-  // Set paddle collision with ball
-  this.physics.add.collider(paddleLeft, ball);
-  this.physics.add.collider(paddleRight, ball);
-}
+			if (ball.y < aiPaddle.y) {
+				aiPaddle.setVelocityY(-400);
+			} else if (ball.y > aiPaddle.y) {
+				aiPaddle.setVelocityY(400);
+			}
+		}
