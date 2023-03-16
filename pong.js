@@ -17,23 +17,6 @@ const config = {
 const game = new Phaser.Game(config);
 let ball, leftPaddle, rightPaddle, cursors, gameStarted;
 
-function setupTouchControls() {
-  const upButton = document.getElementById('up-button');
-  const downButton = document.getElementById('down-button');
-
-  upButton.addEventListener('mousedown', () => { cursors.up.isDown = true; });
-  upButton.addEventListener('touchstart', () => { cursors.up.isDown = true; });
-  upButton.addEventListener('mouseup', () => { cursors.up.isDown = false; });
-  upButton.addEventListener('mouseleave', () => { cursors.up.isDown = false; });
-  upButton.addEventListener('touchend', () => { cursors.up.isDown = false; });
-
-  downButton.addEventListener('mousedown', () => { cursors.down.isDown = true; });
-  downButton.addEventListener('touchstart', () => { cursors.down.isDown = true; });
-  downButton.addEventListener('mouseup', () => { cursors.down.isDown = false; });
-  downButton.addEventListener('mouseleave', () => { cursors.down.isDown = false; });
-  downButton.addEventListener('touchend', () => { cursors.down.isDown = false; });
-}
-
 function create() {
   leftPaddle = this.add.rectangle(0, this.scale.height / 2, 20, 100, 0xffffff);
   rightPaddle = this.add.rectangle(this.scale.width, this.scale.height / 2, 20, 100, 0xffffff).setOrigin(1, 0.5);
@@ -45,8 +28,6 @@ function create() {
   gameStarted = false;
 
   this.score = 0;
-  this.scoreText = this.add.text(this.scale.width / 2, 30, this.score, { fontSize: '32px', color: '#ffffff' }).setOrigin(0.5);
-
   setupTouchControls();
 }
 
@@ -66,13 +47,13 @@ function update() {
 
   if (Phaser.Geom.Intersects.RectangleToRectangle(ball.getBounds(), rightPaddle.getBounds())) {
     this.score++;
-    this.scoreText.setText(this.score);
+    updateScoreDisplay.call(this);
   }
 
   if (ball.x < 0 || ball.x > this.scale.width) {
     ball.x = this.scale.width / 2;
     ball.y = this.scale.height / 2;
-    gameStarted =false;
+    gameStarted = false;
   }
 
   if (cursors.up.isDown) {
@@ -86,13 +67,34 @@ function update() {
   rightPaddle.y = ball.y;
 }
 
-
 function startGame() {
   if (!gameStarted) {
     ball.vx = Phaser.Math.Between(-300, 300);
     ball.vy = Phaser.Math.Between(-300, 300);
     gameStarted = true;
     this.score = 0;
-    this.scoreText.setText(this.score);
+    updateScoreDisplay.call(this);
   }
+}
+
+function updateScoreDisplay() {
+  const scoreElement = document.getElementById('score');
+  scoreElement.textContent = this.score;
+}
+
+function setupTouchControls() {
+  const upButton = document.getElementById('up-button');
+  const downButton = document.getElementById('down-button');
+
+  upButton.addEventListener('mousedown', () => { cursors.up.isDown = true; });
+  upButton.addEventListener('touchstart', () => { cursors.up.isDown = true; });
+  upButton.addEventListener('mouseup', () => { cursors.up.isDown = false; });
+  upButton.addEventListener('mouseleave', () => { cursors.up.isDown = false; });
+upButton.addEventListener('touchend', () => { cursors.up.isDown = false; });
+
+downButton.addEventListener('mousedown', () => { cursors.down.isDown = true; });
+downButton.addEventListener('touchstart', () => { cursors.down.isDown = true; });
+downButton.addEventListener('mouseup', () => { cursors.down.isDown = false; });
+downButton.addEventListener('mouseleave', () => { cursors.down.isDown = false; });
+downButton.addEventListener('touchend', () => { cursors.down.isDown = false; });
 }
