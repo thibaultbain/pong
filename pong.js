@@ -1,149 +1,80 @@
-const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
+// Set up the game configuration
+var config = {
+  type: Phaser.AUTO,
+  parent: 'game-container',
+  width: '100%',
+  height: '100%',
+  backgroundColor: '#000000',
+  physics: {
+    default: 'arcade'
+  },
+  scene: {
+    preload: preload,
+    create: create,
+    update: update
+  }
+};
 
-      // Set canvas dimensions
-      canvas.width = window.innerWidth * 0.9;
-      canvas.height = window.innerHeight * 0.9;
+// Initialize the game
+var game = new Phaser.Game(config);
 
-      // Ball object
-      const ball = {
-        x: canvas.width / 2,
-        y: canvas.height / 2,
-        radius: 10,
-        velocityX: 5,
-        velocityY: 5,
-        speed: 7,
-      };
+// Declare game variables
+var ball;
+var paddleLeft;
+var paddleRight;
+var paddleSpeed = 300;
+var ballSpeed = 200;
 
-      // Player 1 object
-      const player1 = {
-        x: 0,
-        y: canvas.height / 2 - 50,
-        width: 10,
-        height: 100,
-        speed: 10,
-      };
-
-      // Player 2 object
-      const player2 = {
-        x: canvas.width - 10,
-        y: canvas.height / 2 - 50,
-        width: 10,
-        height: 100,
-        speed: 10,
-      };
-
-      // Draw the ball
-      function drawBall(x, y) {
-        ctx.beginPath();
-        ctx.arc(x, y, ball.radius, 0, Math.PI * 2);
-        ctx.fillStyle = "white";
-        ctx.fill();
-        ctx.closePath();
-      }
-
-      // Draw the paddles
-      function drawPaddles(x, y, width, height) {
-        ctx.beginPath();
-        ctx.rect(x, y, width, height);
-        ctx.fillStyle = "white";
-        ctx.fill();
-        ctx.closePath();
-      }
-
-      // Draw the game elements
-      function draw() {
-        // Clear the canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw the ball
-        drawBall(ball.x, ball.y);
-
-        // Draw the paddles
-        drawPaddles(player1.x, player1.y, player1.width, player1.height);
-        drawPaddles(player2.x, player2.y, player2.width, player2.height);
-
-        // Move the ball
-        moveBall();
-
-        // AI control
-        player2.y += (ball.y - (player2.y + player2.height / 2)) * 0.1;
-
-        // Check for paddle hitting top or bottom of the screen
-        if (player1.y <= 0) {
-          player1.y = 0;
-        } else if (player1.y + player1.height >= canvas.height) {
-          player1.y = canvas.height - player1.height;
-        }
-
-        if (player2.y <= 0) {
-          player2.y = 0;
-        } else if (player2.y + player2.height
-          // Check for paddle-ball collision
-function ballHitsPaddle(paddle) {
-return (
-ball.x - ball.radius < paddle.x + paddle.width &&
-ball.x + ball.radius > paddle.x &&
-ball.y + ball.radius > paddle.y &&
-ball.y - ball.radius < paddle.y + paddle.height
-);
+// Load game assets
+function preload() {
+  this.load.image('ball', 'https://uploads-ssl.webflow.com/59443eafc389bf3527eb8111/6411367d56f2916ff6c1468b_ball.svg');
+  this.load.image('paddle', 'https://uploads-ssl.webflow.com/59443eafc389bf3527eb8111/6411367dc858d930bab2fe22_paddle.svg');
 }
-    // Move the ball
-    function moveBall() {
-      ball.x += ball.velocityX;
-      ball.y += ball.velocityY;
 
-      // Check for collision with the walls
-      if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
-        ball.velocityY = -ball.velocityY;
-      }
+// Create game objects
+function create() {
+  // Create the ball sprite
+  ball = this.physics.add.sprite(game.config.width / 2, game.config.height / 2, 'ball');
+  ball.setCollideWorldBounds(true);
+  ball.setBounce(1, 1);
+  ball.setVelocity(ballSpeed, ballSpeed);
 
-      // Check for collision with the paddles
-      let paddle = ball.x + ball.radius < canvas.width / 2 ? player1 : player2;
-      if (ballHitsPaddle(paddle)) {
-        // Flip the velocity of the ball depending on where it hits the paddle
-        let collidePoint = ball.y - (paddle.y + paddle.height / 2);
-        collidePoint = collidePoint / (paddle.height / 2);
-        let angleRad = (Math.PI / 4) * collidePoint;
-        let direction = ball.x + ball.radius < canvas.width / 2 ? 1 : -1;
-        ball.velocityX = direction * ball.speed * Math.cos(angleRad);
-        ball.velocityY = ball.speed * Math.sin(angleRad);
-        ball.speed += 0.1;
-      }
+  // Create the left paddle sprite
+  paddleLeft = this.physics.add.sprite(30, game.config.height / 2, 'paddle');
+  paddleLeft.setCollideWorldBounds(true);
+  paddleLeft.setImmovable(true);
 
-      // Check for scoring
-      if (ball.x + ball.radius > canvas.width) {
-        ball.velocityX = -ball.velocityX;
-        ball.x = canvas.width / 2;
-        ball.y = canvas.height / 2;
-        ball.speed = 7;
-      } else if (ball.x - ball.radius < 0) {
-        ball.velocityX = -ball.velocityX;
-        ball.x = canvas.width / 2;
-        ball.y = canvas.height / 2;
-        ball.speed = 7;
-      }
-    }
+  // Create the right paddle sprite (AI)
+  paddleRight = this.physics.add.sprite(game.config.width - 30, game.config.height / 2, 'paddle');
+  paddleRight.setCollideWorldBounds(true);
+  paddleRight.setImmovable(true);
 
-    // Handle player movement
-    function movePaddle(event) {
-      switch (event.keyCode) {
-        case 38: // Up arrow key
-          player1.y -= player1.speed;
-          break;
-        case 40: // Down arrow key
-          player1.y += player1.speed;
-          break;
-      }
-    }
+  // Add input for the left paddle
+  this.input.on('pointermove', function(pointer) {
+    paddleLeft.y = pointer.y;
+  });
 
-    // Add event listener for keydown event
-    window.addEventListener("keydown", movePaddle, false);
+  // Add input for starting the game
+  this.input.keyboard.on('keydown-ENTER', function() {
+    ball.setVelocity(ballSpeed, ballSpeed);
+  });
 
-    // Append the canvas to the game container
-    document.getElementById("gameContainer").appendChild(canvas);
+  // Add collisions between the ball and paddles
+  this.physics.add.collider(ball, paddleLeft, function() {
+    ball.setVelocityY((ball.y - paddleLeft.y) * 10);
+  }, null, this);
 
-    // Game loop
-    setInterval(draw, 10);
-  })();
+  this.physics.add.collider(ball, paddleRight, function() {
+    ball.setVelocityY((ball.y - paddleRight.y) * 10);
+  }, null, this);
+}
 
+// Update game objects
+function update() {
+  // AI control for the right paddle
+  if (ball.y < paddleRight.y) {
+    paddleRight.setVelocityY(-paddleSpeed);
+  } else if (ball.y > paddleRight.y) {
+    paddleRight.setVelocityY(paddleSpeed);
+  }
+}
