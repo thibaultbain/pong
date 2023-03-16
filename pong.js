@@ -39,7 +39,7 @@ function create() {
   this.physics.add.collider(ball, rightPaddle, paddleBounce, null, this);
 
   cursors = this.input.keyboard.createCursorKeys();
-  this.input.keyboard.on('keydown-ENTER', startGame, this);
+  startGame.call(this);
 }
 
 function update() {
