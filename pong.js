@@ -39,17 +39,17 @@ function create() {
   // Create left paddle
   paddleLeft = this.physics.add.sprite(0, this.game.canvas.height / 2, "paddle");
   paddleLeft.setOrigin(0, 0.5);
-  paddleLeft.setScale(this.game.canvas.width / 500);
+  paddleLeft.setScale(this.game.canvas.width / 600);
 
   // Create right paddle (AI)
   paddleRight = this.physics.add.sprite(this.game.canvas.width, this.game.canvas.height / 2, "paddle");
   paddleRight.setOrigin(1, 0.5);
-  paddleRight.setScale(this.game.canvas.width / 500);
+  paddleRight.setScale(this.game.canvas.width / 600);
 
   // Create ball
   ball = this.physics.add.sprite(this.game.canvas.width / 2, this.game.canvas.height / 2, "ball");
   ball.setOrigin(0.5);
-  ball.setScale(this.game.canvas.width / 500);
+  ball.setScale(this.game.canvas.width / 600);
 
   // Set collision boundaries
   this.physics.world.setBoundsCollision(false, false, true, true);
