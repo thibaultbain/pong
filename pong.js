@@ -1,5 +1,7 @@
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+// Declare the canvas variable
+const gameCanvas = document.getElementById('game-canvas');
+// Get the 2D context
+const ctx = gameCanvas.getContext('2d');
 
   // game settings
   const GAME_WIDTH = 600;
