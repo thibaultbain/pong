@@ -1,18 +1,20 @@
+const gameContainer = document.getElementById('game-container');
 const config = {
   type: Phaser.AUTO,
   parent: 'game-container',
   backgroundColor: 0x000000,
   scale: {
-    mode: Phaser.Scale.FIT,
+    mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: 600,
-    height: 600,
+    width: gameContainer.clientWidth,
+    height: gameContainer.clientHeight,
   },
   scene: {
     create: create,
     update: update,
   },
 };
+
 
 const game = new Phaser.Game(config);
 let ball, leftPaddle, rightPaddle, cursors, gameStarted;
