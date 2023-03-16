@@ -9,60 +9,50 @@ const config = {
     height: 600,
   },
   scene: {
-    preload: preload,
     create: create,
     update: update,
-  },
-  physics: {
-    default: 'arcade',
-    arcade: {
-      debug: false,
-    },
   },
 };
 
 const game = new Phaser.Game(config);
 let ball, leftPaddle, rightPaddle, cursors;
 
-function preload() {
-  this.load.image('ball', 'https://uploads-ssl.webflow.com/59443eafc389bf3527eb8111/6411367d56f2916ff6c1468b_ball.svg');
-  this.load.image('paddle', 'https://uploads-ssl.webflow.com/59443eafc389bf3527eb8111/6411367dc858d930bab2fe22_paddle.svg');
-}
-
 function create() {
-  leftPaddle = this.physics.add.image(0, config.height / 2, 'paddle').setOrigin(0, 0.5).setImmovable();
-  rightPaddle = this.physics.add.image(config.width, config.height / 2, 'paddle').setOrigin(1, 0.5).setImmovable();
-  ball = this.physics.add.image(config.width / 2, config.height / 2, 'ball').setOrigin(0.5);
-  ball.setCollideWorldBounds(true);
-  ball.setBounce(1);
-  this.physics.add.collider(ball, leftPaddle, paddleBounce, null, this);
-  this.physics.add.collider(ball, rightPaddle, paddleBounce, null, this);
+  leftPaddle = this.add.rectangle(0, this.scale.height / 2, 20, 100, 0xffffff);
+  rightPaddle = this.add.rectangle(this.scale.width, this.scale.height / 2, 20, 100, 0xffffff).setOrigin(1, 0.5);
+  ball = this.add.circle(this.scale.width / 2, this.scale.height / 2, 10, 0xffffff);
+  ball.setOrigin(0.5);
+  ball.vx = Phaser.Math.Between(-200, 200);
+  ball.vy = Phaser.Math.Between(-200, 200);
 
   cursors = this.input.keyboard.createCursorKeys();
-  startGame.call(this);
 }
 
 function update() {
-  if (ball.body.velocity.x === 0 && ball.body.velocity.y === 0) return;
+  ball.x += ball.vx * this.game.loop.delta / 1000;
+  ball.y += ball.vy * this.game.loop.delta / 1000;
+
+  if (ball.y < 0 || ball.y > this.scale.height) {
+    ball.vy *= -1;
+  }
+
+  if (Phaser.Geom.Intersects.RectangleToRectangle(ball.getBounds(), leftPaddle.getBounds()) || Phaser.Geom.Intersects.RectangleToRectangle(ball.getBounds(), rightPaddle.getBounds())) {
+    ball.vx *= -1.1;
+  }
+
+  if (ball.x < 0 || ball.x > this.scale.width) {
+    ball.x = this.scale.width / 2;
+    ball.y = this.scale.height / 2;
+    ball.vx = Phaser.Math.Between(-200, 200);
+    ball.vy = Phaser.Math.Between(-200, 200);
+  }
 
   if (cursors.up.isDown) {
-    leftPaddle.setVelocityY(-300);
+    leftPaddle.y -= 300 * this.game.loop.delta / 1000;
   } else if (cursors.down.isDown) {
-    leftPaddle.setVelocityY(300);
-  } else {
-    leftPaddle.setVelocityY(0);
+    leftPaddle.y += 300 * this.game.loop.delta / 1000;
   }
 
   rightPaddle.y = ball.y;
 }
 
-function startGame() {
-  if (ball.body.velocity.x === 0 && ball.body.velocity.y === 0) {
-    ball.setVelocity(Phaser.Math.Between(-200, 200), Phaser.Math.Between(-200, 200));
-  }
-}
-
-function paddleBounce(ball, paddle) {
-  ball.setVelocityX(ball.body.velocity.x * -1.1);
-  ball.setVelocityY(Phaser.Math.Between(-50, 50));
-}
