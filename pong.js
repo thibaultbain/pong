@@ -1,123 +1,77 @@
 const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d");
 
-// set canvas size to match container size
-canvas.width = canvas.parentNode.clientWidth;
-canvas.height = canvas.parentNode.clientHeight;
+  // game variables
+  const paddleWidth = 10;
+  const paddleHeight = 100;
+  const paddleSpeed = 5;
+  let playerY = (canvas.height - paddleHeight) / 2;
+  let aiY = (canvas.height - paddleHeight) / 2;
+  aiY = Math.max(aiY, 0); // make sure AI paddle doesn't go off screen
+  aiY = Math.min(aiY, canvas.height - paddleHeight); // make sure AI paddle doesn't go off screen
+  let ballX = canvas.width / 2;
+  let ballY = canvas.height / 2;
+  let ballSize = 10;
+  let ballSpeedX = 5;
+  let ballSpeedY = 5;
+  let ball = { x: ballX, y: ballY, size: ballSize, speedX: ballSpeedX, speedY: ballSpeedY };
 
-// define paddle properties
-const paddleWidth = 10;
-const paddleHeight = 80;
-const paddleSpeed = 5;
+  // game loop
+  function gameLoop() {
+    // clear canvas
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-// define ball properties
-const ballSize = 10;
-let ballX = canvas.width / 2 - ballSize / 2;
-let ballY = canvas.height / 2 - ballSize / 2;
-let ballSpeedX = 3;
-let ballSpeedY = 3;
+    // draw paddles
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, playerY, paddleWidth, paddleHeight);
+    ctx.fillRect(canvas.width - paddleWidth, aiY, paddleWidth, paddleHeight);
 
-// define player paddle properties
-let playerX = 50;
-let playerY = canvas.height / 2 - paddleHeight / 2;
+    // draw ball
+    ctx.fillRect(ball.x, ball.y, ball.size, ball.size);
 
-// define AI paddle properties
-let aiX = canvas.width - 50 - paddleWidth;
-let aiY = canvas.height / 2 - paddleHeight / 2;
+    // update ball position
+    ball.x += ball.speedX;
+    ball.y += ball.speedY;
 
-// move player paddle with mouse
-function playerMove(event) {
-  let rect = canvas.getBoundingClientRect();
-  playerY = event.clientY - rect.top - paddleHeight / 2;
-}
+    // check if ball hits top or bottom of canvas
+    if (ball.y + ball.size >= canvas.height || ball.y <= 0) {
+      ball.speedY = -ball.speedY;
+    }
 
-// detect collision between ball and paddle
-function paddleCollision(ball, paddle) {
-  paddleTop = paddleY;
-  paddleBottom = paddleY + paddleHeight;
-  paddleLeft = paddleX;
-  paddleRight = paddleX + paddleWidth;
+    // check if ball hits player or AI paddle
+    if ((ball.x <= paddleWidth && ball.y + ball.size >= playerY && ball.y <= playerY + paddleHeight) ||
+        (ball.x + ball.size >= canvas.width - paddleWidth && ball.y + ball.size >= aiY && ball.y <= aiY + paddleHeight)) {
+      ball.speedX = -ball.speedX;
+    }
 
-  ballTop = ballY;
-  ballBottom = ballY + ballSize;
-  ballLeft = ballX;
-  ballRight = ballX + ballSize;
+    // update AI paddle position based on ball position
+    if (ball.y + ball.size / 2 < aiY + paddleHeight / 2) {
+      aiY -= paddleSpeed;
+    } else {
+      aiY += paddleSpeed;
+    }
+    aiY = Math.max(aiY, 0); // make sure AI paddle doesn't go off screen
+    aiY = Math.min(aiY, canvas.height - paddleHeight); // make sure AI paddle doesn't go off screen
 
-  return (
-    ballBottom >= paddleTop &&
-    ballTop <= paddleBottom &&
-    ballRight >= paddleLeft &&
-    ballLeft <= paddleRight
-  );
-}
-
-// main game loop
-function gameLoop() {
-  // clear canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // draw player paddle
-  ctx.fillStyle = "white";
-  ctx.fillRect(playerX, playerY, paddleWidth, paddleHeight);
-
-  // draw AI paddle
-  ctx.fillStyle = "white";
-  ctx.fillRect(aiX, aiY, paddleWidth, paddleHeight);
-
-  // move ball
-  ballX += ballSpeedX;
-  ballY += ballSpeedY;
-
-  // bounce ball off top and bottom walls
-  if (ballY <= 0 || ballY + ballSize >= canvas.height) {
-    ballSpeedY = -ballSpeedY;
+    requestAnimationFrame(gameLoop);
   }
 
-  // detect collision with player paddle
-  if (paddleCollision(ball, { x: playerX, y: playerY, width: paddleWidth, height: paddleHeight })) {
-    ballSpeedX = -ballSpeedX;
+  // player paddle control
+  function playerMove(event) {
+    playerY = event.clientY - canvas.getBoundingClientRect().top - paddleHeight / 2;
+    playerY = Math.max(playerY, 0); // make sure player paddle doesn't go off screen
+    playerY = Math.min(playerY, canvas.height - paddle
   }
 
-  // detect collision with AI paddle
-  if (paddleCollision(ball, { x: aiX, y: aiY, width: paddleWidth, height: paddleHeight })) {
-    ballSpeedX = -ballSpeedX;
-}
-
-// reset ball position if it goes off screen
-if (ballX <= 0 || ballX + ballSize >= canvas.width) {
-ballX = canvas.width / 2 - ballSize / 2;
-ballY = canvas.height / 2 - ballSize / 2;
-}
-
-// move AI paddle towards ball
-if (aiY + paddleHeight / 2 < ballY + ballSize / 2) {
-aiY += paddleSpeed;
-}
-else {
-aiY -= paddleSpeed;
-}
-
-// draw ball
-ctx.fillStyle = "white";
-ctx.fillRect(ballX, ballY, ballSize, ballSize);
-
-// request animation frame
+// start game when player presses enter
+function startGame(event) {
+if (event.keyCode === 13) {
 requestAnimationFrame(gameLoop);
+document.removeEventListener("keydown", startGame);
+}
 }
 
-// start game loop when return key is pressed
-document.addEventListener("keydown", function(event) {
-  if (event.code === "Enter") {
-    gameLoop();
-  }
-});
-
-// move player paddle with up and down arrow keys
-document.addEventListener("keydown", function(event) {
-  if (event.code === "ArrowUp" && playerY >= 0) {
-    playerY -= paddleSpeed;
-  }
-  else if (event.code === "ArrowDown" && playerY + paddleHeight <= canvas.height) {
-    playerY += paddleSpeed;
-  }
-});
+// listen for player paddle control and start game
+document.addEventListener("keydown", startGame);
+document.addEventListener("mousemove", playerMove);
