@@ -105,8 +105,19 @@ ctx.fillRect(ballX, ballY, ballSize, ballSize);
 requestAnimationFrame(gameLoop);
 }
 
-// start game loop
-gameLoop();
+// start game loop when return key is pressed
+document.addEventListener("keydown", function(event) {
+  if (event.code === "Enter") {
+    gameLoop();
+  }
+});
 
-// add event listener for player paddle movement
-canvas.addEventListener("mousemove", playerMove);
+// move player paddle with up and down arrow keys
+document.addEventListener("keydown", function(event) {
+  if (event.code === "ArrowUp" && playerY >= 0) {
+    playerY -= paddleSpeed;
+  }
+  else if (event.code === "ArrowDown" && playerY + paddleHeight <= canvas.height) {
+    playerY += paddleSpeed;
+  }
+});
