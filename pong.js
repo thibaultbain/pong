@@ -15,20 +15,24 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
-let ball, leftPaddle, rightPaddle, cursors;
+let ball, leftPaddle, rightPaddle, cursors, gameStarted;
 
 function create() {
   leftPaddle = this.add.rectangle(0, this.scale.height / 2, 20, 100, 0xffffff);
   rightPaddle = this.add.rectangle(this.scale.width, this.scale.height / 2, 20, 100, 0xffffff).setOrigin(1, 0.5);
   ball = this.add.circle(this.scale.width / 2, this.scale.height / 2, 10, 0xffffff);
   ball.setOrigin(0.5);
-  ball.vx = Phaser.Math.Between(-200, 200);
-  ball.vy = Phaser.Math.Between(-200, 200);
 
   cursors = this.input.keyboard.createCursorKeys();
+  this.input.keyboard.on('keydown-ENTER', startGame, this);
+  gameStarted = false;
+
+  this.score = 0;
 }
 
 function update() {
+  if (!gameStarted) return;
+
   ball.x += ball.vx * this.game.loop.delta / 1000;
   ball.y += ball.vy * this.game.loop.delta / 1000;
 
@@ -40,11 +44,15 @@ function update() {
     ball.vx *= -1.1;
   }
 
+  if (Phaser.Geom.Intersects.RectangleToRectangle(ball.getBounds(), rightPaddle.getBounds())) {
+    this.score++;
+    updateScoreDisplay.call(this);
+  }
+
   if (ball.x < 0 || ball.x > this.scale.width) {
     ball.x = this.scale.width / 2;
     ball.y = this.scale.height / 2;
-    ball.vx = Phaser.Math.Between(-200, 200);
-    ball.vy = Phaser.Math.Between(-200, 200);
+    gameStarted = false;
   }
 
   if (cursors.up.isDown) {
@@ -53,6 +61,22 @@ function update() {
     leftPaddle.y += 300 * this.game.loop.delta / 1000;
   }
 
+  leftPaddle.y = Phaser.Math.Clamp(leftPaddle.y, leftPaddle.height / 2, this.scale.height - leftPaddle.height / 2);
+
   rightPaddle.y = ball.y;
 }
 
+function startGame() {
+  if (!gameStarted) {
+    ball.vx = Phaser.Math.Between(-300, 300);
+    ball.vy = Phaser.Math.Between(-300, 300);
+    gameStarted = true;
+    this.score = 0;
+    updateScoreDisplay.call(this);
+  }
+}
+
+function updateScoreDisplay() {
+  const scoreElement = document.getElementById('score');
+  scoreElement.textContent = this.score;
+}
