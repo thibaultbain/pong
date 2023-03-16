@@ -17,6 +17,23 @@ const config = {
 const game = new Phaser.Game(config);
 let ball, leftPaddle, rightPaddle, cursors, gameStarted;
 
+function setupTouchControls() {
+  const upButton = document.getElementById('up-button');
+  const downButton = document.getElementById('down-button');
+
+  upButton.addEventListener('mousedown', () => { cursors.up.isDown = true; });
+  upButton.addEventListener('touchstart', () => { cursors.up.isDown = true; });
+  upButton.addEventListener('mouseup', () => { cursors.up.isDown = false; });
+  upButton.addEventListener('mouseleave', () => { cursors.up.isDown = false; });
+  upButton.addEventListener('touchend', () => { cursors.up.isDown = false; });
+
+  downButton.addEventListener('mousedown', () => { cursors.down.isDown = true; });
+  downButton.addEventListener('touchstart', () => { cursors.down.isDown = true; });
+  downButton.addEventListener('mouseup', () => { cursors.down.isDown = false; });
+  downButton.addEventListener('mouseleave', () => { cursors.down.isDown = false; });
+  downButton.addEventListener('touchend', () => { cursors.down.isDown = false; });
+}
+
 function create() {
   leftPaddle = this.add.rectangle(0, this.scale.height / 2, 20, 100, 0xffffff);
   rightPaddle = this.add.rectangle(this.scale.width, this.scale.height / 2, 20, 100, 0xffffff).setOrigin(1, 0.5);
@@ -29,6 +46,8 @@ function create() {
 
   this.score = 0;
   this.scoreText = this.add.text(this.scale.width / 2, 30, this.score, { fontSize: '32px', color: '#ffffff' }).setOrigin(0.5);
+
+  setupTouchControls();
 }
 
 function update() {
@@ -65,23 +84,6 @@ function update() {
   leftPaddle.y = Phaser.Math.Clamp(leftPaddle.y, leftPaddle.height / 2, this.scale.height - leftPaddle.height / 2);
 
   rightPaddle.y = ball.y;
-}
-
-function setupTouchControls() {
-  const upButton = document.getElementById('up-button');
-  const downButton = document.getElementById('down-button');
-
-  upButton.addEventListener('mousedown', () => { cursors.up.isDown = true; });
-  upButton.addEventListener('touchstart', () => { cursors.up.isDown = true; });
-  upButton.addEventListener('mouseup', () => { cursors.up.isDown = false; });
-  upButton.addEventListener('mouseleave', () => { cursors.up.isDown = false; });
-  upButton.addEventListener('touchend', () => { cursors.up.isDown = false; });
-
-  downButton.addEventListener('mousedown', () => { cursors.down.isDown = true; });
-  downButton.addEventListener('touchstart', () => { cursors.down.isDown = true; });
-  downButton.addEventListener('mouseup', () => { cursors.down.isDown = false; });
-  downButton.addEventListener('mouseleave', () => { cursors.down.isDown = false; });
-  downButton.addEventListener('touchend', () => { cursors.down.isDown = false; });
 }
 
 
