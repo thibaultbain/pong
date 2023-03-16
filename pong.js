@@ -1,128 +1,149 @@
 const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      canvas.width = 800;
-      canvas.height = 600;
-      canvas.style.backgroundColor = "black";
-      canvas.style.margin = "0 auto";
-      canvas.style.display = "block";
 
+      // Set canvas dimensions
+      canvas.width = window.innerWidth * 0.9;
+      canvas.height = window.innerHeight * 0.9;
+
+      // Ball object
       const ball = {
         x: canvas.width / 2,
         y: canvas.height / 2,
         radius: 10,
-        speed: 5,
         velocityX: 5,
         velocityY: 5,
-        color: "white",
+        speed: 7,
       };
 
+      // Player 1 object
       const player1 = {
-        x: 10,
-        y: canvas.height / 2 - 40,
+        x: 0,
+        y: canvas.height / 2 - 50,
         width: 10,
-        height: 80,
+        height: 100,
         speed: 10,
-        color: "white",
       };
 
+      // Player 2 object
       const player2 = {
-        x: canvas.width - 20,
-        y: canvas.height / 2 - 40,
+        x: canvas.width - 10,
+        y: canvas.height / 2 - 50,
         width: 10,
-        height: 80,
-        speed: 5,
-        color: "white",
+        height: 100,
+        speed: 10,
       };
 
-      function drawBall() {
+      // Draw the ball
+      function drawBall(x, y) {
         ctx.beginPath();
-        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-        ctx.fillStyle = ball.color;
+        ctx.arc(x, y, ball.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
         ctx.fill();
         ctx.closePath();
       }
 
-      function drawPaddle(x, y, width, height, color) {
+      // Draw the paddles
+      function drawPaddles(x, y, width, height) {
         ctx.beginPath();
         ctx.rect(x, y, width, height);
-        ctx.fillStyle = color;
+        ctx.fillStyle = "white";
         ctx.fill();
         ctx.closePath();
       }
 
+      // Draw the game elements
       function draw() {
+        // Clear the canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawPaddle(player1.x, player1.y, player1.width, player1.height, player1.color);
-        drawPaddle(player2.x, player2.y, player2.width, player2.height, player2.color);
-        drawBall();
+
+        // Draw the ball
+        drawBall(ball.x, ball.y);
+
+        // Draw the paddles
+        drawPaddles(player1.x, player1.y, player1.width, player1.height);
+        drawPaddles(player2.x, player2.y, player2.width, player2.height);
+
+        // Move the ball
         moveBall();
+
+        // AI control
+        player2.y += (ball.y - (player2.y + player2.height / 2)) * 0.1;
+
+        // Check for paddle hitting top or bottom of the screen
+        if (player1.y <= 0) {
+          player1.y = 0;
+        } else if (player1.y + player1.height >= canvas.height) {
+          player1.y = canvas.height - player1.height;
+        }
+
+        if (player2.y <= 0) {
+          player2.y = 0;
+        } else if (player2.y + player2.height
+          // Check for paddle-ball collision
+function ballHitsPaddle(paddle) {
+return (
+ball.x - ball.radius < paddle.x + paddle.width &&
+ball.x + ball.radius > paddle.x &&
+ball.y + ball.radius > paddle.y &&
+ball.y - ball.radius < paddle.y + paddle.height
+);
+}
+    // Move the ball
+    function moveBall() {
+      ball.x += ball.velocityX;
+      ball.y += ball.velocityY;
+
+      // Check for collision with the walls
+      if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
+        ball.velocityY = -ball.velocityY;
       }
 
-      function moveBall() {
-        ball.x += ball.velocityX;
-        ball.y += ball.velocityY;
+      // Check for collision with the paddles
+      let paddle = ball.x + ball.radius < canvas.width / 2 ? player1 : player2;
+      if (ballHitsPaddle(paddle)) {
+        // Flip the velocity of the ball depending on where it hits the paddle
+        let collidePoint = ball.y - (paddle.y + paddle.height / 2);
+        collidePoint = collidePoint / (paddle.height / 2);
+        let angleRad = (Math.PI / 4) * collidePoint;
+        let direction = ball.x + ball.radius < canvas.width / 2 ? 1 : -1;
+        ball.velocityX = direction * ball.speed * Math.cos(angleRad);
+        ball.velocityY = ball.speed * Math.sin(angleRad);
+        ball.speed += 0.1;
+      }
 
-        if (ball.y + ball.radius >= canvas.height || ball.y - ball.radius <= 0) {
-          ball.velocityY = -ball.velocityY;
-        }
-
-        if (ball.x + ball.radius >= canvas.width) {
-          ball.velocityX = -ball.velocityX;
-          ball.x = canvas.width / 2;
-          ball.y = canvas.height / 2;
-        }
-
-        if (ball.x - ball.radius <= 0) {
-          ball.velocityX = -ball.velocityX;
-          ball.x = canvas.width / 2;
-          ball.y = canvas.height / 2;
-        }
-
-        if (
-          ball.x - ball.radius <= player1.x + player1.width &&
-          ball.y >= player1.y &&
-          ball.y <= player1.y + player1.height
-        ) {
-          ball.velocityX = -ball.velocityX;
-        }
-
-        if (
-          ball.x + ball.radius >= player2.x &&
-          ball.y >= player2.y &&
-          ball.y <= player2.y + player2.height
-        ) {
-          ball.velocityX = -ball.velocityX;
-}
-    // AI control
-    player2.y += (ball.y - (player2.y + player2.height / 2)) * 0.1;
-
-    // check for paddle hitting top or bottom of the screen
-    if (player1.y <= 0) {
-      player1.y = 0;
-    } else if (player1.y + player1.height >= canvas.height) {
-      player1.y = canvas.height - player1.height;
+      // Check for scoring
+      if (ball.x + ball.radius > canvas.width) {
+        ball.velocityX = -ball.velocityX;
+        ball.x = canvas.width / 2;
+        ball.y = canvas.height / 2;
+        ball.speed = 7;
+      } else if (ball.x - ball.radius < 0) {
+        ball.velocityX = -ball.velocityX;
+        ball.x = canvas.width / 2;
+        ball.y = canvas.height / 2;
+        ball.speed = 7;
+      }
     }
 
-    if (player2.y <= 0) {
-      player2.y = 0;
-    } else if (player2.y + player2.height >= canvas.height) {
-      player2.y = canvas.height - player2.height;
+    // Handle player movement
+    function movePaddle(event) {
+      switch (event.keyCode) {
+        case 38: // Up arrow key
+          player1.y -= player1.speed;
+          break;
+        case 40: // Down arrow key
+          player1.y += player1.speed;
+          break;
+      }
     }
-  }
 
-  function onKeyDown(event) {
-    if (event.keyCode === 38) {
-      // up arrow
-      player1.y -= player1.speed;
-    } else if (event.keyCode === 40) {
-      // down arrow
-      player1.y += player1.speed;
-    }
-  }
+    // Add event listener for keydown event
+    window.addEventListener("keydown", movePaddle, false);
 
-  document.addEventListener("keydown", onKeyDown);
+    // Append the canvas to the game container
+    document.getElementById("gameContainer").appendChild(canvas);
 
-  const gameContainer = document.getElementById("gameContainer");
-  gameContainer.appendChild(canvas);
+    // Game loop
+    setInterval(draw, 10);
+  })();
 
-  setInterval(draw, 10);
