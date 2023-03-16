@@ -1,155 +1,87 @@
-// Declare the canvas variable
-const gameCanvas = document.getElementById('game-canvas');
-// Get the 2D context
-const ctx = gameCanvas.getContext('2d');
+const canvas = document.createElement("canvas");
+      canvas.id = "gameCanvas";
+      canvas.width = 600;
+      canvas.height = 400;
+      const context = canvas.getContext("2d");
 
-  // game settings
-  const GAME_WIDTH = 600;
-  const GAME_HEIGHT = 400;
-  const PADDLE_WIDTH = 10;
-  const PADDLE_HEIGHT = 100;
-  const BALL_SIZE = 10;
-  const PADDLE_SPEED = 5;
-  const BALL_SPEED = 5;
+      const player1 = { x: 0, y: 160, speed: 5 };
+      const player2 = { x: 590, y: 160, speed: 5 };
+      const ball = { x: 300, y: 200, speed: 5, directionX: 1, directionY: 1 };
 
-  // create player paddle
-  let player = {
-    x: 0,
-    y: GAME_HEIGHT / 2 - PADDLE_HEIGHT / 2,
-    width: PADDLE_WIDTH,
-    height: PADDLE_HEIGHT,
-    score: 0,
-    move: function (direction) {
-      if (direction === "up") {
-        this.y = Math.max(0, this.y - PADDLE_SPEED);
-      } else if (direction === "down") {
-        this.y = Math.min(GAME_HEIGHT - this.height, this.y + PADDLE_SPEED);
+      function draw() {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        drawPaddle(player1.x, player1.y, "player1");
+        drawPaddle(player2.x, player2.y, "player2");
+        drawBall(ball.x, ball.y);
+        moveBall();
+        movePlayer();
+        window.requestAnimationFrame(draw);
       }
-    },
-  };
 
-  // create AI paddle
-  let ai = {
-    x: GAME_WIDTH - PADDLE_WIDTH,
-    y: GAME_HEIGHT / 2 - PADDLE_HEIGHT / 2,
-    width: PADDLE_WIDTH,
-    height: PADDLE_HEIGHT,
-    score: 0,
-    move: function (direction) {
-      if (direction === "up") {
-        this.y = Math.max(0, this.y - PADDLE_SPEED);
-      } else if (direction === "down") {
-        this.y = Math.min(GAME_HEIGHT - this.height, this.y + PADDLE_SPEED);
+      function drawPaddle(x, y, id) {
+        const paddle = document.createElement("div");
+        paddle.className = "paddle";
+        paddle.id = id;
+        paddle.style.top = y + "px";
+        paddle.style.left = x + "px";
+        document.getElementById("gameContainer").appendChild(paddle);
       }
-    },
-  };
 
-  // create ball object
-  let ball = {
-    x: GAME_WIDTH / 2,
-    y: GAME_HEIGHT / 2,
-    size: BALL_SIZE,
-    speedX: BALL_SPEED,
-    speedY: BALL_SPEED,
-  };
+      function drawBall(x, y) {
+        const ball = document.createElement("div");
+        ball.id = "ball";
+        ball.style.top = y + "px";
+        ball.style.left = x + "px";
+        document.getElementById("gameContainer").appendChild(ball);
+      }
 
-  // game loop
- function gameLoop() {
-  // move player paddle
-  if (playerDirection === "up") {
-    player.y -= player.speed;
-  } else if (playerDirection === "down") {
-    player.y += player.speed;
+      function moveBall() {
+        ball.x += ball.speed * ball.directionX;
+        ball.y += ball.speed * ball.directionY;
+
+        if (ball.x <= 0) {
+          ball.directionX = 1;
+        } else if (ball.x >= canvas.width - 10) {
+          ball.directionX = -1;
+        }
+
+        if (ball.y <= 0) {
+          ball.directionY = 1;
+        } else if (ball.y >= canvas.height - 10) {
+          ball.directionY = -1;
+        }
+
+        if (
+          ball.x <= player1.x + 10 &&
+          ball.y >= player1.y &&
+          ball.y <= player1.y + 80
+        ) {
+          ball.directionX = 1;
+        } else if (
+          ball.x >= player2.x - 10 &&
+          ball.y >= player2.y &&
+          ball.y <= player2.y + 80
+        ) {
+          ball.directionX = -1;
+        }
+
+  function movePlayer() {
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "ArrowUp") {
+        player1.y -= player1.speed;
+        if (player1.y <= 0) {
+          player1.y = 0;
+        }
+      } else if (event.key === "ArrowDown") {
+        player1.y += player1.speed;
+        if (player1.y >= canvas.height - 80) {
+          player1.y = canvas.height - 80;
+        }
+      } else if (event.key === "Enter") {
+        window.requestAnimationFrame(draw);
+      }
+    });
   }
 
-  // move AI paddle
-  if (aiDirection === "up") {
-    ai.y -= ai.speed;
-  } else if (aiDirection === "down") {
-    ai.y += ai.speed;
-  }
-
-  // move ball
-  ball.x += ball.speedX;
-  ball.y += ball.speedY;
-
-  // check for collisions
-  if (ball.y < 0 || ball.y + ball.size > GAME_HEIGHT) {
-    ball.speedY = -ball.speedY;
-  }
-
-  if (ball.x < 0) {
-    ai.score++;
-    resetBall();
-  } else if (ball.x + ball.size > GAME_WIDTH) {
-    player.score++;
-    resetBall();
-  }
-
-  if (ball.x < player.x + player.width && 
-      ball.x + ball.size > player.x && 
-      ball.y < player.y + player.height && 
-      ball.y + ball.size > player.y) {
-    // ball hit player paddle
-    ball.speedX = -ball.speedX
-
-
-  // handle player paddle control
-  let playerDirection = null;
-
-    function playerMove(event) {
-    if (event.keyCode === 38) { // up arrow
-      playerDirection = "up";
-    } else if (event.keyCode === 40) { // down arrow
-      playerDirection = "down";
-    }
-  }
-
-  function playerStop(event) {
-    if (event.keyCode === 38 || event.keyCode === 40) {
-      playerDirection = null;
-    }
-  }
-
-  document.addEventListener("keydown", function (event) {
-    if (event.keyCode === 13) { // return key
-      requestAnimationFrame(gameLoop);
-      document.removeEventListener("keydown", arguments.callee);
-      document.addEventListener("keydown", playerMove);
-      document.addEventListener("keyup", playerStop);
-    }
-  });
-
-  // handle AI paddle control
-  let aiDirection = null;
-
-  function aiMove() {
-    if (ball.y < ai.y + ai.height / 2) {
-      aiDirection = "up";
-    } else if (ball.y > ai.y + ai.height / 2) {
-      aiDirection = "down";
-    }
-  }
-
-  // resize canvas to fit inside game container
-function resizeCanvas() {
-  // Get the container element
-  const container = document.getElementById('game-container');
-  // Get the new canvas dimensions
-  const canvasWidth = container.offsetWidth;
-  const canvasHeight = container.offsetHeight;
-
-  // Set the new canvas dimensions
-  canvas.width = canvasWidth;
-  canvas.height = canvasHeight;
-  
-  // Redraw the game
-  draw();
-}
-
-
-  // add canvas to DOM and start game
-  const container = document.getElementById("game-container");
-  container.appendChild(canvas);
-  resizeCanvas();
+  document.getElementById("gameContainer").appendChild(canvas);
 
