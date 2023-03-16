@@ -28,6 +28,7 @@ function create() {
   gameStarted = false;
 
   this.score = 0;
+  this.scoreText = this.add.text(this.scale.width / 2, 30, this.score, { fontSize: '32px', color: '#ffffff' }).setOrigin(0.5);
 }
 
 function update() {
@@ -46,13 +47,13 @@ function update() {
 
   if (Phaser.Geom.Intersects.RectangleToRectangle(ball.getBounds(), rightPaddle.getBounds())) {
     this.score++;
-    updateScoreDisplay.call(this);
+    this.scoreText.setText(this.score);
   }
 
   if (ball.x < 0 || ball.x > this.scale.width) {
     ball.x = this.scale.width / 2;
     ball.y = this.scale.height / 2;
-    gameStarted = false;
+    gameStarted =false;
   }
 
   if (cursors.up.isDown) {
@@ -66,17 +67,30 @@ function update() {
   rightPaddle.y = ball.y;
 }
 
+function setupTouchControls() {
+  const upButton = document.getElementById('up-button');
+  const downButton = document.getElementById('down-button');
+
+  upButton.addEventListener('mousedown', () => { cursors.up.isDown = true; });
+  upButton.addEventListener('touchstart', () => { cursors.up.isDown = true; });
+  upButton.addEventListener('mouseup', () => { cursors.up.isDown = false; });
+  upButton.addEventListener('mouseleave', () => { cursors.up.isDown = false; });
+  upButton.addEventListener('touchend', () => { cursors.up.isDown = false; });
+
+  downButton.addEventListener('mousedown', () => { cursors.down.isDown = true; });
+  downButton.addEventListener('touchstart', () => { cursors.down.isDown = true; });
+  downButton.addEventListener('mouseup', () => { cursors.down.isDown = false; });
+  downButton.addEventListener('mouseleave', () => { cursors.down.isDown = false; });
+  downButton.addEventListener('touchend', () => { cursors.down.isDown = false; });
+}
+
+
 function startGame() {
   if (!gameStarted) {
     ball.vx = Phaser.Math.Between(-300, 300);
     ball.vy = Phaser.Math.Between(-300, 300);
     gameStarted = true;
     this.score = 0;
-    updateScoreDisplay.call(this);
+    this.scoreText.setText(this.score);
   }
-}
-
-function updateScoreDisplay() {
-  const scoreElement = document.getElementById('score');
-  scoreElement.textContent = this.score;
 }
