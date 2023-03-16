@@ -130,14 +130,21 @@
   }
 
   // resize canvas to fit inside game container
-  function resizeCanvas() {
-    const container = document.getElementById("game-container");
-    const rect = container.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
-    GAME_WIDTH = rect.width;
-    GAME_HEIGHT = rect.height;
-  }
+function resizeCanvas() {
+  // Get the container element
+  const container = document.getElementById('game-container');
+  // Get the new canvas dimensions
+  const canvasWidth = container.offsetWidth;
+  const canvasHeight = container.offsetHeight;
+
+  // Set the new canvas dimensions
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+  
+  // Redraw the game
+  draw();
+}
+
 
   // add canvas to DOM and start game
   const container = document.getElementById("game-container");
