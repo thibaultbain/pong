@@ -64,6 +64,7 @@ const canvas = document.createElement("canvas");
         ) {
           ball.directionX = -1;
         }
+          }
 
   function movePlayer() {
     document.addEventListener("keydown", function (event) {
