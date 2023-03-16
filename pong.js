@@ -1,116 +1,112 @@
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 
-  // Initialize the canvas and game variables
-  const canvas = document.getElementById('gameCanvas');
-  const ctx = canvas.getContext('2d');
+// set canvas size to match container size
+canvas.width = canvas.parentNode.clientWidth;
+canvas.height = canvas.parentNode.clientHeight;
 
-  let ballX = canvas.width / 2;
-  let ballY = canvas.height / 2;
-  let ballDirectionX = 3;
-  let ballDirectionY = 3;
-  let ballRadius = 10;
+// define paddle properties
+const paddleWidth = 10;
+const paddleHeight = 80;
+const paddleSpeed = 5;
 
-  let leftPaddleY = canvas.height / 2 - 50;
-  let rightPaddleY = canvas.height / 2 - 50;
-  let paddleHeight = 100;
-  let paddleWidth = 10;
-  let paddleSpeed = 5;
+// define ball properties
+const ballSize = 10;
+let ballX = canvas.width / 2 - ballSize / 2;
+let ballY = canvas.height / 2 - ballSize / 2;
+let ballSpeedX = 3;
+let ballSpeedY = 3;
 
-  let leftScore = 0;
-  let rightScore = 0;
+// define player paddle properties
+let playerX = 50;
+let playerY = canvas.height / 2 - paddleHeight / 2;
 
-  // Helper function to draw the ball
-  function drawBall() {
-    ctx.beginPath();
-    ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
-    ctx.fillStyle = '#ffffff';
-    ctx.fill();
-    ctx.closePath();
+// define AI paddle properties
+let aiX = canvas.width - 50 - paddleWidth;
+let aiY = canvas.height / 2 - paddleHeight / 2;
+
+// move player paddle with mouse
+function playerMove(event) {
+  let rect = canvas.getBoundingClientRect();
+  playerY = event.clientY - rect.top - paddleHeight / 2;
+}
+
+// detect collision between ball and paddle
+function paddleCollision(ball, paddle) {
+  paddleTop = paddleY;
+  paddleBottom = paddleY + paddleHeight;
+  paddleLeft = paddleX;
+  paddleRight = paddleX + paddleWidth;
+
+  ballTop = ballY;
+  ballBottom = ballY + ballSize;
+  ballLeft = ballX;
+  ballRight = ballX + ballSize;
+
+  return (
+    ballBottom >= paddleTop &&
+    ballTop <= paddleBottom &&
+    ballRight >= paddleLeft &&
+    ballLeft <= paddleRight
+  );
+}
+
+// main game loop
+function gameLoop() {
+  // clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // draw player paddle
+  ctx.fillStyle = "white";
+  ctx.fillRect(playerX, playerY, paddleWidth, paddleHeight);
+
+  // draw AI paddle
+  ctx.fillStyle = "white";
+  ctx.fillRect(aiX, aiY, paddleWidth, paddleHeight);
+
+  // move ball
+  ballX += ballSpeedX;
+  ballY += ballSpeedY;
+
+  // bounce ball off top and bottom walls
+  if (ballY <= 0 || ballY + ballSize >= canvas.height) {
+    ballSpeedY = -ballSpeedY;
   }
 
-  // Helper function to draw the paddles
-  function drawPaddles() {
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, leftPaddleY, paddleWidth, paddleHeight);
-    ctx.fillRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
+  // detect collision with player paddle
+  if (paddleCollision(ball, { x: playerX, y: playerY, width: paddleWidth, height: paddleHeight })) {
+    ballSpeedX = -ballSpeedX;
   }
 
-  // Helper function to draw the scores
-  function drawScores() {
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '48px Arial';
-    ctx.fillText(leftScore, canvas.width / 2 - 80, 50);
-    ctx.fillText(rightScore, canvas.width / 2 + 40, 50);
-  }
-
-  // Core game logic function
-  function updateGame() {
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Update ball position
-    ballX += ballDirectionX;
-    ballY += ballDirectionY;
-
-    // Check for collision with the walls
-    if (ballY + ballRadius > canvas.height || ballY - ballRadius < 0) {
-      ballDirectionY *= -1;
-    }
-
-    // Check for collision with the left paddle
-    if (ballX - ballRadius < paddleWidth && ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
-      ballDirectionX *= -1;
-    }
-
-    // Check for collision with the right paddle
-    if (ballX + ballRadius > canvas.width - paddleWidth && ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
-      ballDirectionX *= -1;
-    }
-
-    // Check for scoring
-    if (ballX - ballRadius < 0) {
-      rightScore++;
-      ballX = canvas.width / 2;
-      ballY = canvas.height / 2;
-      ballDirectionX *= -1;
-    } else if (ballX + ballRadius > canvas.width) {
-      leftScore++;
-      ballX = canvas.width / 2;
-      ballY = canvas.height / 2;
-      ballDirectionX *= -1;
-    }
-
-// Update paddle positions
-if (keys[87] && leftPaddleY > 0) { // W key
-  leftPaddleY -= paddleSpeed;
-} else if (keys[83] && leftPaddleY + paddleHeight < canvas.height) { // S key
-  leftPaddleY += paddleSpeed;
+  // detect collision with AI paddle
+  if (paddleCollision(ball, { x: aiX, y: aiY, width: paddleWidth, height: paddleHeight })) {
+    ballSpeedX = -ballSpeedX;
 }
 
-if (keys[38] && rightPaddleY > 0) { // Up arrow key
-  rightPaddleY -= paddleSpeed;
-} else if (keys[40] && rightPaddleY + paddleHeight < canvas.height) { // Down arrow key
-  rightPaddleY += paddleSpeed;
+// reset ball position if it goes off screen
+if (ballX <= 0 || ballX + ballSize >= canvas.width) {
+ballX = canvas.width / 2 - ballSize / 2;
+ballY = canvas.height / 2 - ballSize / 2;
 }
 
-// Draw game elements
-drawBall();
-drawPaddles();
-drawScores();
+// move AI paddle towards ball
+if (aiY + paddleHeight / 2 < ballY + ballSize / 2) {
+aiY += paddleSpeed;
+}
+else {
+aiY -= paddleSpeed;
 }
 
-// Start the game when the user presses the Enter key
-document.addEventListener('keydown', (event) => {
-if (event.key === 'Enter') {
-setInterval(updateGame, 10);
+// draw ball
+ctx.fillStyle = "white";
+ctx.fillRect(ballX, ballY, ballSize, ballSize);
+
+// request animation frame
+requestAnimationFrame(gameLoop);
 }
-});
 
-// Track key presses for the paddles
-let keys = {};
-document.addEventListener('keydown', (event) => {
-keys[event.keyCode] = true;
-});
+// start game loop
+gameLoop();
 
-document.addEventListener('keyup', (event) => {
-delete keys[event.keyCode];
-});
+// add event listener for player paddle movement
+canvas.addEventListener("mousemove", playerMove);
