@@ -52,50 +52,45 @@
   };
 
   // game loop
-  function gameLoop() {
-    // clear canvas
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-    // move player and AI paddles
-    player.move(playerDirection);
-    ai.move(aiDirection);
-
-    // draw player and AI paddles
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(player.x, player.y, player.width, player.height);
-    ctx.fillRect(ai.x, ai.y, ai.width, ai.height);
-
-    // move ball
-    ball.x += ball.speedX;
-    ball.y += ball.speedY;
-
-    // check if ball collides with top or bottom of canvas
-    if (ball.y < 0 || ball.y > GAME_HEIGHT - ball.size) {
-      ball.speedY = -ball.speedY;
-    }
-
-    // check if ball collides with player or AI paddle
-    if (
-      ball.x < player.x + player.width &&
-      ball.y + ball.size > player.y &&
-      ball.y < player.y + player.height
-    ) {
-      ball.speedX = -ball.speedX;
-    } else if (
-      ball.x + ball.size > ai.x &&
-      ball.y + ball.size > ai.y &&
-      ball.y < ai.y + ai.height
-    ) {
-      ball.speedX = -ball.speedX;
-    }
-
-    // draw ball
-    ctx.fillRect(ball.x, ball.y, ball.size, ball.size);
-
-    // request next frame
-    requestAnimationFrame(gameLoop);
+ function gameLoop() {
+  // move player paddle
+  if (playerDirection === "up") {
+    player.y -= player.speed;
+  } else if (playerDirection === "down") {
+    player.y += player.speed;
   }
+
+  // move AI paddle
+  if (aiDirection === "up") {
+    ai.y -= ai.speed;
+  } else if (aiDirection === "down") {
+    ai.y += ai.speed;
+  }
+
+  // move ball
+  ball.x += ball.speedX;
+  ball.y += ball.speedY;
+
+  // check for collisions
+  if (ball.y < 0 || ball.y + ball.size > GAME_HEIGHT) {
+    ball.speedY = -ball.speedY;
+  }
+
+  if (ball.x < 0) {
+    ai.score++;
+    resetBall();
+  } else if (ball.x + ball.size > GAME_WIDTH) {
+    player.score++;
+    resetBall();
+  }
+
+  if (ball.x < player.x + player.width && 
+      ball.x + ball.size > player.x && 
+      ball.y < player.y + player.height && 
+      ball.y + ball.size > player.y) {
+    // ball hit player paddle
+    ball.speedX = -ball.speedX
+
 
   // handle player paddle control
   let playerDirection = null;
