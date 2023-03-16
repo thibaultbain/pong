@@ -83,8 +83,12 @@ function updateScoreDisplay() {
 }
 
 function setupTouchControls() {
+  const startButton = document.getElementById('start-button');
   const upButton = document.getElementById('up-button');
   const downButton = document.getElementById('down-button');
+
+  startButton.addEventListener('mousedown', startGame.bind(this));
+  startButton.addEventListener('touchstart', startGame.bind(this));
 
   upButton.addEventListener('mousedown', () => { cursors.up.isDown = true; });
   upButton.addEventListener('touchstart', () => { cursors.up.isDown = true; });
