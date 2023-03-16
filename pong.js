@@ -11,9 +11,9 @@ const canvas = document.getElementById("canvas");
   aiY = Math.min(aiY, canvas.height - paddleHeight); // make sure AI paddle doesn't go off screen
   let ballX = canvas.width / 2;
   let ballY = canvas.height / 2;
-  let ballSize = 10;
-  let ballSpeedX = 5;
-  let ballSpeedY = 5;
+  let ballSize = 50;
+  let ballSpeedX = 10;
+  let ballSpeedY = 10;
   let ball = { x: ballX, y: ballY, size: ballSize, speedX: ballSpeedX, speedY: ballSpeedY };
 
   // game loop
