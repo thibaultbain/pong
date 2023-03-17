@@ -95,38 +95,6 @@ function startGame() {
   }
 }
 
-function restartGame() {
-  if (gameStarted) {
-    gameStarted = false;
-    game.scene.scenes[0].score = 0;
-    updateScoreDisplay.call(game.scene.scenes[0]);
-    ball.x = game.scale.width / 2;
-    ball.y = game.scale.height / 2;
-  }
-}
-
 function setupTouchControls() {
   const startButton = document.getElementById('start-button');
-  const restartButton = document.getElementById('restart-button');
-  const upButton = document.getElementById('up-button');
-  const downButton = document.getElementById('down-button');
-
-  startButton.addEventListener('click', () => startGame.call(game.scene.scenes[0]));
-  restartButton.addEventListener('click', () => restartGame.call(game.scene.scenes[0]));
-
-  upButton.addEventListener('mousedown', () => (cursors.up.isDown = true));
-  upButton.addEventListener('mouseup', () => (cursors.up.isDown = false));
-  upButton.addEventListener('touchstart', () => (cursors.up.isDown = true));
-  upButton.addEventListener('touchend', () => (cursors.up.isDown = false));
-
-  downButton.addEventListener('mousedown', () => (cursors.down.isDown = true));
-  downButton.addEventListener('mouseup', () => (cursors.down.isDown = false));
-  downButton.addEventListener('touchstart', () => (cursors.down.isDown = true));
-  downButton.addEventListener('touchend', () => (cursors.down.isDown = false));
-}
-
-
-function updateScoreDisplay() {
-  const scoreDisplay = document.getElementById('score');
-  scoreDisplay.textContent = this.score;
-}
+  const upButton = document.getElementById('
