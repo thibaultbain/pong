@@ -15,7 +15,7 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
-let ball, leftPaddle, rightPaddle, cursors, gameStarted;
+let ball, leftPaddle, rightPaddle, cursors, gameStarted, joystick;
 
 function create() {
   leftPaddle = this.add.rectangle(0, this.scale.height / 2, 20, 100, 0xffffff);
@@ -56,9 +56,9 @@ function update() {
     gameStarted = false;
   }
 
-  if (cursors.up.isDown) {
+  if (cursors.up.isDown || joystick.up()) {
     leftPaddle.y -= 300 * this.game.loop.delta / 1000;
-  } else if (cursors.down.isDown) {
+  } else if (cursors.down.isDown || joystick.down()) {
     leftPaddle.y += 300 * this.game.loop.delta / 1000;
   }
 
@@ -85,7 +85,7 @@ function updateScoreDisplay() {
 function setupTouchControls() {
   const startButton = document.getElementById('start-button');
   const restartButton = document.getElementById('restart-button');
-  const joystick = new VirtualJoystick({
+  joystick = new VirtualJoystick({
     container: document.getElementById('joystick-container'),
     mouseSupport: true,
   });
@@ -99,64 +99,6 @@ function setupTouchControls() {
   restartButton.addEventListener('click', () => {
     if (gameStarted) {
       startGame.call(this);
-    }
-  });
-
-  this.input.on('pointermove', (pointer) => {
-    if (pointer.isDown) {
-      const dx = pointer.x - (this.scale.width / 2);
-      const dy = pointer.y - (this.scale.height / 2);
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      if (distance > 50) {
-        cursors.up.isDown = false;
-        cursors.down.isDown = false;
-      } else {
-        if (dy < 0) {
-          cursors.up.isDown = true;
-          cursors.down.isDown = false;
-        } else {
-          cursors.up.isDown = false;
-          cursors.down.isDown = true;
-        }
-      }
-    } else {
-      cursors.up.isDown = false;
-      cursors.down.isDown = false;
-    }
-  });
-
-  this.input.on('pointerup', () => {
-    cursors.up.isDown = false;
-    cursors.down.isDown = false;
-  });
-
-  joystick.addEventListener('touchStart', () => {
-    cursors.up.isDown = false;
-    cursors.down.isDown = false;
-  });
-
-  joystick.addEventListener('touchEnd', () => {
-    cursors.up.isDown = false;
-    cursors.down.isDown = false;
-  });
-
-  joystick.addEventListener('touchMove', (event) => {
-    const dx = event.dx;
-    const dy = event.dy;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance > 50) {
-      cursors.up.isDown = false;
-      cursors.down.isDown = false;
-    } else {
-      if (dy < 0) {
-        cursors.up.isDown = true;
-        cursors.down.isDown = false;
-      } else {
-        cursors.up.isDown = false;
-        cursors.down.isDown = true;
-      }
     }
   });
 }
