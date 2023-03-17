@@ -16,6 +16,7 @@ const config = {
 
 const game = new Phaser.Game(config);
 let ball, leftPaddle, rightPaddle, cursors, gameStarted;
+
 function create() {
   leftPaddle = this.add.rectangle(0, this.scale.height / 2, 20, 100, 0xffffff);
   rightPaddle = this.add.rectangle(this.scale.width, this.scale.height / 2, 20, 100, 0xffffff).setOrigin(1, 0.5);
@@ -27,24 +28,61 @@ function create() {
   gameStarted = false;
 
   this.score = 0;
-  const scene = this;
-  setupTouchControls(scene);
+  setupTouchControls.call(this);
 }
 
 function update() {
   if (!gameStarted) return;
 
-  // ... (the rest of the update function)
+  ball.x += ball.vx * this.game.loop.delta / 1000;
+  ball.y += ball.vy * this.game.loop.delta / 1000;
+
+  if (ball.y < 0 || ball.y > this.scale.height) {
+    ball.vy *= -1;
+  }
+
+  if (Phaser.Geom.Intersects.RectangleToRectangle(ball.getBounds(), leftPaddle.getBounds()) || Phaser.Geom.Intersects.RectangleToRectangle(ball.getBounds(), rightPaddle.getBounds())) {
+    ball.vx *= -1.1;
+  }
+
+  if (Phaser.Geom.Intersects.RectangleToRectangle(ball.getBounds(), rightPaddle.getBounds())) {
+    this.score++;
+    updateScoreDisplay.call(this);
+  }
+
+  if (ball.x < 0 || ball.x > this.scale.width) {
+    ball.x = this.scale.width / 2;
+    ball.y = this.scale.height / 2;
+    gameStarted = false;
+  }
+
+  if (cursors.up.isDown) {
+    leftPaddle.y -= 300 * this.game.loop.delta / 1000;
+  } else if (cursors.down.isDown) {
+    leftPaddle.y += 300 * this.game.loop.delta / 1000;
+  }
+
+  leftPaddle.y = Phaser.Math.Clamp(leftPaddle.y, leftPaddle.height / 2, this.scale.height - leftPaddle.height / 2);
+
+  rightPaddle.y = ball.y;
 }
 
 function startGame() {
-  // ... (the startGame function)
+  if (!gameStarted) {
+    ball.vx = Phaser.Math.Between(-300, 300);
+    ball.vy = Phaser.Math.Between(-300, 300);
+    gameStarted = true;
+    this.score = 0;
+    updateScoreDisplay.call(this);
+  }
 }
 
 function updateScoreDisplay() {
-  // ... (the updateScoreDisplay function)
+  const scoreElement = document.getElementById('score');
+  scoreElement.textContent = this.score;
 }
-function setupTouchControls(scene) {
+
+function setupTouchControls() {
   const startButton = document.getElementById('start-button');
   const restartButton = document.getElementById('restart-button');
   const upButton = document.getElementById('up-button');
@@ -52,13 +90,13 @@ function setupTouchControls(scene) {
 
   startButton.addEventListener('click', () => {
     if (!gameStarted) {
-      startGame.call(scene);
+      startGame.call(this);
     }
   });
 
   restartButton.addEventListener('click', () => {
     if (gameStarted) {
-      startGame.call(scene);
+      startGame.call(this);
     }
   });
 
