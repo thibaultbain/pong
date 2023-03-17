@@ -20,8 +20,11 @@ let ball, leftPaddle, rightPaddle, cursors, gameStarted;
 function create() {
 const paddleWidth = 20;
 const paddleHeight = 100;
-leftPaddle = this.add.rectangle(0, this.scale.height / 2, paddleWidth, paddleHeight, 0xffffff);
-rightPaddle = this.add.rectangle(this.scale.width, this.scale.height / 2, paddleWidth, paddleHeight, 0xffffff).setOrigin(1, 0.5);
+leftPaddle = this.add.graphics({ fillStyle: { color: 0xffffff } });
+leftPaddle.fillRect(0, this.scale.height / 2 - paddleHeight / 2, paddleWidth, paddleHeight);
+
+rightPaddle = this.add.graphics({ fillStyle: { color: 0xffffff } });
+rightPaddle.fillRect(this.scale.width - paddleWidth, this.scale.height / 2 - paddleHeight / 2, paddleWidth, paddleHeight);
 
   ball = this.add.circle(this.scale.width / 2, this.scale.height / 2, 10, 0xffffff);
   ball.setOrigin(0.5);
@@ -65,7 +68,9 @@ function update() {
     leftPaddle.y += 300 * this.game.loop.delta / 1000;
   }
 
-  leftPaddle.y = Phaser.Math.Clamp(leftPaddle.y, leftPaddle.height / 2, this.scale.height - leftPaddle.height / 2);
+  const newY = Phaser.Math.Clamp(leftPaddle.y + (cursors.up.isDown ? -1 : cursors.down.isDown ? 1 : 0) * 300 * this.game.loop.delta / 1000, paddleHeight / 2, this.scale.height - paddleHeight / 2);
+leftPaddle.y = newY - paddleHeight / 2;
+
 
   rightPaddle.y = ball.y;
 }
