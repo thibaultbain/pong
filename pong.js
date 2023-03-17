@@ -88,10 +88,32 @@ joystick = new VirtualJoystick({
   container: document.getElementById('joystick-container'),
   mouseSupport: true,
   stationaryBase: true,
+  color: 'transparent',
   baseX: document.getElementById('joystick-container').clientWidth / 2,
   baseY: document.getElementById('joystick-container').clientHeight / 2,
   limitStickTravel: true,
   stickRadius: document.getElementById('joystick-container').clientWidth / 2 - 10,
+});
+
+joystick.addEventListener('touchStart', () => {
+  cursors.up.isDown = false;
+  cursors.down.isDown = false;
+});
+
+joystick.addEventListener('touchEnd', () => {
+  cursors.up.isDown = false;
+  cursors.down.isDown = false;
+});
+
+joystick.addEventListener('touchMove', () => {
+  const dy = joystick.deltaY();
+  if (dy < 0) {
+    cursors.up.isDown = true;
+    cursors.down.isDown = false;
+  } else {
+    cursors.up.isDown = false;
+    cursors.down.isDown = true;
+  }
 });
 
   startButton.addEventListener('click', () => {
