@@ -98,13 +98,12 @@ function startGame() {
 function restartGame() {
   if (gameStarted) {
     gameStarted = false;
-    this.score = 0;
-    updateScoreDisplay.call(this);
-    ball.x = this.scale.width / 2;
-    ball.y = this.scale.height / 2;
+    game.scene.scenes[0].score = 0;
+    updateScoreDisplay.call(game.scene.scenes[0]);
+    ball.x = game.scale.width / 2;
+    ball.y = game.scale.height / 2;
   }
 }
-
 
 function setupTouchControls() {
   const startButton = document.getElementById('start-button');
@@ -112,8 +111,8 @@ function setupTouchControls() {
   const upButton = document.getElementById('up-button');
   const downButton = document.getElementById('down-button');
 
-  startButton.addEventListener('click', startGame.bind(this));
-  restartButton.addEventListener('click', restartGame.bind(this));
+  startButton.addEventListener('click', () => startGame.call(game.scene.scenes[0]));
+  restartButton.addEventListener('click', () => restartGame.call(game.scene.scenes[0]));
 
   upButton.addEventListener('mousedown', () => (cursors.up.isDown = true));
   upButton.addEventListener('mouseup', () => (cursors.up.isDown = false));
@@ -125,6 +124,7 @@ function setupTouchControls() {
   downButton.addEventListener('touchstart', () => (cursors.down.isDown = true));
   downButton.addEventListener('touchend', () => (cursors.down.isDown = false));
 }
+
 
 function updateScoreDisplay() {
   const scoreDisplay = document.getElementById('score');
