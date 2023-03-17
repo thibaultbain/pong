@@ -10,8 +10,8 @@ const config = {
     height: gameContainer.clientHeight,
   },
   scene: {
-    create: create,
-    update: update,
+    create,
+    update,
   },
 };
 
