@@ -85,8 +85,10 @@ function updateScoreDisplay() {
 function setupTouchControls() {
   const startButton = document.getElementById('start-button');
   const restartButton = document.getElementById('restart-button');
-  const upButton = document.getElementById('up-button');
-  const downButton = document.getElementById('down-button');
+  const joystick = new VirtualJoystick({
+    container: document.getElementById('joystick-container'),
+    mouseSupport: true,
+  });
 
   startButton.addEventListener('click', () => {
     if (!gameStarted) {
@@ -95,20 +97,67 @@ function setupTouchControls() {
   });
 
   restartButton.addEventListener('click', () => {
+    if (gamerestartButton.addEventListener('click', () => {
     if (gameStarted) {
       startGame.call(this);
     }
   });
 
-  upButton.addEventListener('mousedown', () => { cursors.up.isDown = true; });
-  upButton.addEventListener('touchstart', () => { cursors.up.isDown = true; });
-  upButton.addEventListener('mouseup', () => { cursors.up.isDown = false; });
-  upButton.addEventListener('mouseleave', () => { cursors.up.isDown = false; });
-  upButton.addEventListener('touchend', () => { cursors.up.isDown = false; });
+  this.input.on('pointermove', (pointer) => {
+    if (pointer.isDown) {
+      const dx = pointer.x - (this.scale.width / 2);
+      const dy = pointer.y - (this.scale.height / 2);
+      const distance = Math.sqrt(dx * dx + dy * dy);
 
-  downButton.addEventListener('mousedown', () => { cursors.down.isDown = true; });
-  downButton.addEventListener('touchstart', () => { cursors.down.isDown = true; });
-  downButton.addEventListener('mouseup', () => { cursors.down.isDown = false; });
-  downButton.addEventListener('mouseleave', () => { cursors.down.isDown = false; });
-  downButton.addEventListener('touchend', () => { cursors.down.isDown = false; });
+      if (distance > 50) {
+        cursors.up.isDown = false;
+        cursors.down.isDown = false;
+      } else {
+        if (dy < 0) {
+          cursors.up.isDown = true;
+          cursors.down.isDown = false;
+        } else {
+          cursors.up.isDown = false;
+          cursors.down.isDown = true;
+        }
+      }
+    } else {
+      cursors.up.isDown = false;
+      cursors.down.isDown = false;
+    }
+  });
+
+  this.input.on('pointerup', () => {
+    cursors.up.isDown = false;
+    cursors.down.isDown = false;
+  });
+
+  joystick.addEventListener('touchStart', () => {
+    cursors.up.isDown = false;
+    cursors.down.isDown = false;
+  });
+
+  joystick.addEventListener('touchEnd', () => {
+    cursors.up.isDown = false;
+    cursors.down.isDown = false;
+  });
+
+  joystick.addEventListener('touchMove', (event) => {
+    const dx = event.dx;
+    const dy = event.dy;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > 50) {
+      cursors.up.isDown = false;
+      cursors.down.isDown = false;
+    } else {
+      if (dy < 0) {
+        cursors.up.isDown = true;
+        cursors.down.isDown = false;
+      } else {
+        cursors.up.isDown = false;
+        cursors.down.isDown = true;
+      }
+    }
+  });
 }
