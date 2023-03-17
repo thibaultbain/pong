@@ -84,10 +84,15 @@ function updateScoreDisplay() {
 function setupTouchControls() {
   const startButton = document.getElementById('start-button');
   const restartButton = document.getElementById('restart-button');
-  joystick = new VirtualJoystick({
-    container: document.getElementById('joystick-container'),
-    mouseSupport: true,
-  });
+joystick = new VirtualJoystick({
+  container: document.getElementById('joystick-container'),
+  mouseSupport: true,
+  stationaryBase: true,
+  baseX: document.getElementById('joystick-container').clientWidth / 2,
+  baseY: document.getElementById('joystick-container').clientHeight / 2,
+  limitStickTravel: true,
+  stickRadius: document.getElementById('joystick-container').clientWidth / 2 - 10,
+});
 
   startButton.addEventListener('click', () => {
     if (!gameStarted) {
