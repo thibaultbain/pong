@@ -76,3 +76,5 @@ function setupTouchControls() {
   downButton.addEventListener('touchend', () => { cursors.down.isDown = false; });
 }
 
+
+
