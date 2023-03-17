@@ -97,4 +97,30 @@ function startGame() {
 
 function setupTouchControls() {
   const startButton = document.getElementById('start-button');
-  const upButton = document.getElementById('
+  const upButton = document.getElementById('up-button');
+const downButton = document.getElementById('down-button');
+
+startButton.addEventListener('mousedown', startGame.bind(this));
+startButton.addEventListener('touchstart', startGame.bind(this));
+
+upButton.addEventListener('mousedown', () => cursors.up.isDown = true);
+upButton.addEventListener('mouseup', () => cursors.up.isDown = false);
+upButton.addEventListener('touchstart', (e) => {
+e.preventDefault();
+cursors.up.isDown = true;
+});
+upButton.addEventListener('touchend', () => cursors.up.isDown = false);
+
+downButton.addEventListener('mousedown', () => cursors.down.isDown = true);
+downButton.addEventListener('mouseup', () => cursors.down.isDown = false);
+downButton.addEventListener('touchstart', (e) => {
+e.preventDefault();
+cursors.down.isDown = true;
+});
+downButton.addEventListener('touchend', () => cursors.down.isDown = false);
+}
+
+function updateScoreDisplay() {
+const scoreElement = document.getElementById('score');
+scoreElement.textContent = this.score;
+}
