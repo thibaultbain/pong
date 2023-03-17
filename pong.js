@@ -85,7 +85,7 @@ function updateScoreDisplay() {
 function setupTouchControls() {
   const startButton = document.getElementById('start-button');
   const restartButton = document.getElementById('restart-button');
-  joystick = new VirtualJoystick({
+  joystick = new joystick({
     container: document.getElementById('joystick-container'),
     mouseSupport: true,
   });
