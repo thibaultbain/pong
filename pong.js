@@ -44,8 +44,6 @@ function create() {
 
 function update() {
   if (gameStarted) {
-    ball.body.setVelocityX(300);
-    ball.body.setVelocityY(200);
 
     this.physics.world.collide(ball, leftPaddle, paddleCollide);
     this.physics.world.collide(ball, rightPaddle, paddleCollide);
