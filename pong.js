@@ -30,7 +30,6 @@ function create() {
   this.score = 0;
   setupTouchControls.call(this);
 }
-
 function update() {
   if (!gameStarted) return;
 
@@ -56,9 +55,9 @@ function update() {
     gameStarted = false;
   }
 
-  if (cursors.up.isDown || joystick.up()) {
+  if (cursors.up.isDown || joystick.deltaY() < -10) {
     leftPaddle.y -= 300 * this.game.loop.delta / 1000;
-  } else if (cursors.down.isDown || joystick.down()) {
+  } else if (cursors.down.isDown || joystick.deltaY() > 10) {
     leftPaddle.y += 300 * this.game.loop.delta / 1000;
   }
 
