@@ -16,7 +16,6 @@ const config = {
 
 const game = new Phaser.Game(config);
 let ball, leftPaddle, rightPaddle, cursors, gameStarted;
-
 function create() {
   leftPaddle = this.add.rectangle(0, this.scale.height / 2, 20, 100, 0xffffff);
   rightPaddle = this.add.rectangle(this.scale.width, this.scale.height / 2, 20, 100, 0xffffff).setOrigin(1, 0.5);
@@ -28,7 +27,8 @@ function create() {
   gameStarted = false;
 
   this.score = 0;
-  setupTouchControls.call(this);
+  const scene = this;
+  setupTouchControls(scene);
 }
 
 function update() {
@@ -44,8 +44,7 @@ function startGame() {
 function updateScoreDisplay() {
   // ... (the updateScoreDisplay function)
 }
-
-function setupTouchControls() {
+function setupTouchControls(scene) {
   const startButton = document.getElementById('start-button');
   const restartButton = document.getElementById('restart-button');
   const upButton = document.getElementById('up-button');
@@ -53,13 +52,13 @@ function setupTouchControls() {
 
   startButton.addEventListener('click', () => {
     if (!gameStarted) {
-      startGame.call(this);
+      startGame.call(scene);
     }
   });
 
   restartButton.addEventListener('click', () => {
     if (gameStarted) {
-      startGame.call(this);
+      startGame.call(scene);
     }
   });
 
@@ -75,6 +74,3 @@ function setupTouchControls() {
   downButton.addEventListener('mouseleave', () => { cursors.down.isDown = false; });
   downButton.addEventListener('touchend', () => { cursors.down.isDown = false; });
 }
-
-
-
