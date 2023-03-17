@@ -67,16 +67,6 @@ function update() {
   rightPaddle.y = ball.y;
 }
 
-function restartGame() {
-  if (gameStarted) {
-    ball.x = this.scale.width / 2;
-    ball.y = this.scale.height / 2;
-    gameStarted = false;
-  }
-  startGame.call(this);
-}
-
-
 function startGame() {
   if (!gameStarted) {
     ball.vx = Phaser.Math.Between(-300, 300);
@@ -92,7 +82,7 @@ function updateScoreDisplay() {
   scoreElement.textContent = this.score;
 }
 
-function setupTouchControls(scene) {
+function setupTouchControls() {
   const startButton = document.getElementById('start-button');
   const restartButton = document.getElementById('restart-button');
   const upButton = document.getElementById('up-button');
@@ -100,14 +90,15 @@ function setupTouchControls(scene) {
 
   startButton.addEventListener('click', () => {
     if (!gameStarted) {
-      startGame.call(scene);
+      startGame.call(this);
     }
   });
 
   restartButton.addEventListener('click', () => {
-    restartGame.call(scene);
+    if (gameStarted) {
+      startGame.call(this);
+    }
   });
-
 
   upButton.addEventListener('mousedown', () => { cursors.up.isDown = true; });
   upButton.addEventListener('touchstart', () => { cursors.up.isDown = true; });
