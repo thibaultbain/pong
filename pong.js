@@ -18,8 +18,11 @@ const game = new Phaser.Game(config);
 let ball, leftPaddle, rightPaddle, cursors, gameStarted;
 
 function create() {
-  leftPaddle = this.add.rectangle(0, this.scale.height / 2, 20, 100, 0xffffff);
-  rightPaddle = this.add.rectangle(this.scale.width, this.scale.height / 2, 20, 100, 0xffffff).setOrigin(1, 0.5);
+const paddleWidth = 20;
+const paddleHeight = 100;
+leftPaddle = this.add.rectangle(0, this.scale.height / 2, paddleWidth, paddleHeight, 0xffffff);
+rightPaddle = this.add.rectangle(this.scale.width, this.scale.height / 2, paddleWidth, paddleHeight, 0xffffff).setOrigin(1, 0.5);
+
   ball = this.add.circle(this.scale.width / 2, this.scale.height / 2, 10, 0xffffff);
   ball.setOrigin(0.5);
 
