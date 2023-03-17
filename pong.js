@@ -82,7 +82,7 @@ function updateScoreDisplay() {
   scoreElement.textContent = this.score;
 }
 
-function setupTouchControls() {
+function setupTouchControls(scene) {
   const startButton = document.getElementById('start-button');
   const restartButton = document.getElementById('restart-button');
   const upButton = document.getElementById('up-button');
@@ -90,14 +90,12 @@ function setupTouchControls() {
 
   startButton.addEventListener('click', () => {
     if (!gameStarted) {
-      startGame.call(this);
+      startGame.call(scene);
     }
   });
 
   restartButton.addEventListener('click', () => {
-    if (gameStarted) {
-      startGame.call(this);
-    }
+    startGame.call(scene);
   });
 
   upButton.addEventListener('mousedown', () => { cursors.up.isDown = true; });
