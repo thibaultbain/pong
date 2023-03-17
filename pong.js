@@ -97,7 +97,6 @@ function setupTouchControls() {
   });
 
   restartButton.addEventListener('click', () => {
-    if (gamerestartButton.addEventListener('click', () => {
     if (gameStarted) {
       startGame.call(this);
     }
