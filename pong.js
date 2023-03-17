@@ -98,10 +98,10 @@ function startGame() {
 function restartGame() {
   if (gameStarted) {
     gameStarted = false;
-    game.scene.scenes[0].score = 0;
-    updateScoreDisplay.call(game.scene.scenes[0]);
-    ball.x = game.scale.width / 2;
-    ball.y = game.scale.height / 2;
+    this.score = 0;
+    updateScoreDisplay.call(this);
+    ball.x = this.scale.width / 2;
+    ball.y = this.scale.height / 2;
   }
 }
 
