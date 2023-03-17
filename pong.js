@@ -67,6 +67,16 @@ function update() {
   rightPaddle.y = ball.y;
 }
 
+function restartGame() {
+  if (gameStarted) {
+    ball.x = this.scale.width / 2;
+    ball.y = this.scale.height / 2;
+    gameStarted = false;
+  }
+  startGame.call(this);
+}
+
+
 function startGame() {
   if (!gameStarted) {
     ball.vx = Phaser.Math.Between(-300, 300);
@@ -95,8 +105,9 @@ function setupTouchControls(scene) {
   });
 
   restartButton.addEventListener('click', () => {
-    startGame.call(scene);
+    restartGame.call(scene);
   });
+
 
   upButton.addEventListener('mousedown', () => { cursors.up.isDown = true; });
   upButton.addEventListener('touchstart', () => { cursors.up.isDown = true; });
