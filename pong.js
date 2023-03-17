@@ -95,6 +95,40 @@ function startGame() {
   }
 }
 
+function restartGame() {
+  if (gameStarted) {
+    gameStarted = false;
+    this.score = 0;
+    updateScoreDisplay.call(this);
+    ball.x = this.scale.width / 2;
+    ball.y = this.scale.height / 2;
+    ball.body.setVelocity(0);
+  }
+}
+
+
 function setupTouchControls() {
   const startButton = document.getElementById('start-button');
-  const upButton = document.getElementById('
+  const restartButton = document.getElementById('restart-button');
+  const upButton = document.getElementById('up-button');
+  const downButton = document.getElementById('down-button');
+
+  startButton.addEventListener('click', () => startGame.call(this));
+  restartButton.addEventListener('click', () => restartGame.call(this));
+
+  upButton.addEventListener('mousedown', () => (cursors.up.isDown = true));
+  upButton.addEventListener('mouseup', () => (cursors.up.isDown = false));
+  upButton.addEventListener('touchstart', () => (cursors.up.isDown = true));
+  upButton.addEventListener('touchend', () => (cursors.up.isDown = false));
+
+  downButton.addEventListener('mousedown', () => (cursors.down.isDown = true));
+  downButton.addEventListener('mouseup', () => (cursors.down.isDown = false));
+  downButton.addEventListener('touchstart', () => (cursors.down.isDown = true));
+  downButton.addEventListener('touchend', () => (cursors.down.isDown = false));
+}
+
+
+function updateScoreDisplay() {
+  const scoreDisplay = document.getElementById('score');
+  scoreDisplay.textContent = this.score;
+}
